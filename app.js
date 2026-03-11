@@ -56,20 +56,15 @@ function setMode(mode) {
   if (mode === "devis") {
     fieldFac.classList.add("hidden-field");
     gridRefs.classList.add("mode-devis");
-    document.getElementById("labelDate").textContent  = "Date du devis";
+    document.getElementById("labelDate").textContent   = "Date du devis";
     document.getElementById("labelNumDevis").innerHTML = "Numéro de devis <span class=\"req\">*</span>";
-    document.getElementById("btnLabel").textContent   = "Générer le devis PDF";
-    // Cacher acompte/solde sur le devis (pas encore contractuel)
-    document.getElementById("rowAcompte").classList.add("row-hidden");
-    document.getElementById("rowSolde").classList.add("row-hidden");
+    document.getElementById("btnLabel").textContent    = "Générer le devis PDF";
   } else {
     fieldFac.classList.remove("hidden-field");
     gridRefs.classList.remove("mode-devis");
-    document.getElementById("labelDate").textContent  = "Date de la facture";
+    document.getElementById("labelDate").textContent   = "Date de la facture";
     document.getElementById("labelNumDevis").innerHTML = "Numéro de devis";
-    document.getElementById("btnLabel").textContent   = "Générer la facture PDF";
-    document.getElementById("rowAcompte").classList.remove("row-hidden");
-    document.getElementById("rowSolde").classList.remove("row-hidden");
+    document.getElementById("btnLabel").textContent    = "Générer la facture PDF";
   }
 }
 
@@ -161,8 +156,6 @@ function renderLignes() {
 function updateTotaux() {
   const total = lignes.reduce((s, l) => s + l.quantite * l.prixUnitaire, 0);
   document.getElementById("totGeneral").textContent = formatEur(total);
-  document.getElementById("totAcompte").textContent = formatEur(total * 0.40);
-  document.getElementById("totSolde").textContent   = formatEur(total * 0.60);
 }
 
 // ── Helpers ────────────────────────────────────────────────────────
@@ -343,7 +336,7 @@ function drawTable(doc, y, lignes) {
   return doc.lastAutoTable.finalY + 8;
 }
 
-function drawFooterBlocs(doc, y) {
+function drawFooterBlocs(doc, y, conditions) {
   const fw = (CW - 8) / 2;
 
   // RIB
@@ -366,7 +359,7 @@ function drawFooterBlocs(doc, y) {
   doc.text("CONDITIONS DE RÈGLEMENT", cx + 5, y + 7);
   doc.setLineWidth(0.2); doc.line(cx + 4, y + 9, cx + fw - 4, y + 9);
   doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(80,80,80);
-  const condLines = doc.splitTextToSize(ASSO.conditions, fw - 10);
+  const condLines = doc.splitTextToSize(conditions || ASSO.conditions, fw - 10);
   doc.text(condLines, cx + 5, y + 16);
 
   return y + 36;
@@ -391,8 +384,9 @@ function drawPageFooter(doc) {
 //  BUILD FACTURE PDF
 // ══════════════════════════════════════════════════════════════════
 function buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, clientCont, clientEmail) {
-  const doc   = newDoc();
-  const total = lignes.reduce((s,l) => s + l.quantite * l.prixUnitaire, 0);
+  const doc        = newDoc();
+  const total      = lignes.reduce((s,l) => s + l.quantite * l.prixUnitaire, 0);
+  const conditions = document.getElementById("conditions").value.trim() || ASSO.conditions;
 
   drawTopStripe(doc);
   let y = drawHeader(doc, 12);
@@ -404,36 +398,27 @@ function buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, 
   doc.text("FACTURE", ML + 8, y + 12);
   const rx = PW - MR - 6;
   doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(200,200,200);
-  doc.text("N° Facture :", rx - 22, y + 7, {align:"right"});
+  doc.text("N° Facture :", rx - 22, y + 7,  {align:"right"});
   doc.text("N° Devis :",   rx - 22, y + 12, {align:"right"});
   doc.text("Date :",       rx - 22, y + 17, {align:"right"});
   doc.setFont("helvetica","bold"); doc.setTextColor(...WHITE);
-  doc.text(numFacture || "—",         rx, y + 7,  {align:"right"});
-  doc.text(numDevis   || "—",         rx, y + 12, {align:"right"});
-  doc.text(formatDateFR(dateDoc),     rx, y + 17, {align:"right"});
+  doc.text(numFacture || "—",     rx, y + 7,  {align:"right"});
+  doc.text(numDevis   || "—",     rx, y + 12, {align:"right"});
+  doc.text(formatDateFR(dateDoc), rx, y + 17, {align:"right"});
   y += 26;
 
   y = drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, "ÉMETTEUR", "FACTURÉ À");
   y = drawTable(doc, y, lignes);
 
-  // Total
-  const acompte = total * 0.40;
-  const solde   = total * 0.60;
-  const tw = 80, tx = PW - MR - tw, th = 32;
+  // Total simplifié
+  const tw = 80, tx = PW - MR - tw, th = 22;
   doc.setFillColor(...DARK); doc.roundedRect(tx, y, tw, th, 2, 2, "F");
-  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(160,160,160);
-  doc.text("Acompte (40%) :", tx + 4, y + 9);
-  doc.text("Solde (60%) :",   tx + 4, y + 17);
-  doc.setFont("helvetica","bold"); doc.setTextColor(...WHITE);
-  doc.text(formatEur(acompte), tx + tw - 4, y + 9,  {align:"right"});
-  doc.text(formatEur(solde),   tx + tw - 4, y + 17, {align:"right"});
-  doc.setDrawColor(80,80,80); doc.setLineWidth(0.2);
-  doc.line(tx + 4, y + 20, tx + tw - 4, y + 20);
-  doc.setFontSize(11); doc.text("TOTAL TTC :", tx + 4, y + 28);
-  doc.text(formatEur(total), tx + tw - 4, y + 28, {align:"right"});
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...WHITE);
+  doc.text("TOTAL TTC :", tx + 4, y + 14);
+  doc.text(formatEur(total), tx + tw - 4, y + 14, {align:"right"});
   y += th + 10;
 
-  y = drawFooterBlocs(doc, y);
+  y = drawFooterBlocs(doc, y, conditions);
   drawTVAMention(doc, y);
   drawPageFooter(doc);
 
@@ -446,9 +431,10 @@ function buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, 
 //  BUILD DEVIS PDF
 // ══════════════════════════════════════════════════════════════════
 function buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, clientEmail) {
-  const doc   = newDoc();
-  const total = lignes.reduce((s,l) => s + l.quantite * l.prixUnitaire, 0);
-  const PH    = 297;
+  const doc        = newDoc();
+  const total      = lignes.reduce((s,l) => s + l.quantite * l.prixUnitaire, 0);
+  const PH         = 297;
+  const conditions = document.getElementById("conditions").value.trim() || ASSO.conditions;
 
   drawTopStripe(doc);
   let y = drawHeader(doc, 12);
@@ -460,20 +446,20 @@ function buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, cl
   doc.text("DEVIS", ML + 8, y + 12);
   const rx = PW - MR - 6;
   doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(200,200,200);
-  doc.text("N° Devis :",  rx - 22, y + 7,  {align:"right"});
-  doc.text("Date :",      rx - 22, y + 12, {align:"right"});
+  doc.text("N° Devis :",          rx - 22, y + 7,  {align:"right"});
+  doc.text("Date :",              rx - 22, y + 12, {align:"right"});
   doc.text("Valable jusqu'au :", rx - 22, y + 17, {align:"right"});
   doc.setFont("helvetica","bold"); doc.setTextColor(...WHITE);
-  doc.text(numDevis || "—",           rx, y + 7,  {align:"right"});
-  doc.text(formatDateFR(dateDoc),     rx, y + 12, {align:"right"});
+  doc.text(numDevis || "—",       rx, y + 7,  {align:"right"});
+  doc.text(formatDateFR(dateDoc), rx, y + 12, {align:"right"});
   doc.setTextColor(...RED);
-  doc.text(dateValidite(dateDoc),     rx, y + 17, {align:"right"});
+  doc.text(dateValidite(dateDoc), rx, y + 17, {align:"right"});
   y += 26;
 
   y = drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, "ÉMETTEUR", "ADRESSÉ À");
   y = drawTable(doc, y, lignes);
 
-  // Total (simplifié pour devis : juste le montant total)
+  // Total
   const tw = 80, tx = PW - MR - tw, th = 22;
   doc.setFillColor(...DARK); doc.roundedRect(tx, y, tw, th, 2, 2, "F");
   doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...WHITE);
@@ -481,48 +467,44 @@ function buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, cl
   doc.text(formatEur(total), tx + tw - 4, y + 14, {align:"right"});
   y += th + 10;
 
+  // RIB + conditions (comme la facture)
+  y = drawFooterBlocs(doc, y, conditions);
+
   // Mention TVA
   y = drawTVAMention(doc, y);
 
-  // ── Bloc "Bon pour accord" ────────────────────────────────────
-  // Vérif espace
+  // Bloc "Bon pour accord"
   if (y + 60 > PH - 20) { doc.addPage(); y = 20; }
 
-  // Encadré mention
   doc.setFillColor(254,249,245); doc.setDrawColor(...RED); doc.setLineWidth(0.4);
   doc.roundedRect(ML, y, CW, 16, 2, 2, "FD");
   doc.setFont("helvetica","italic"); doc.setFontSize(9); doc.setTextColor(80,40,30);
-  const mentionText = "Si ce devis vous convient, merci de nous le retourner signé, précédé de la mention « Bon pour accord ».";
-  const mentionLines = doc.splitTextToSize(mentionText, CW - 12);
+  const mentionLines = doc.splitTextToSize(
+    "Si ce devis vous convient, merci de nous le retourner signé, précédé de la mention « Bon pour accord ».",
+    CW - 12
+  );
   doc.text(mentionLines, ML + 6, y + 6);
-
   y += 22;
 
-  // Zones date + signature côte à côte
-  const zw = (CW - 8) / 2;
-  const zh = 32;
+  // Zones date + signature
+  const zw = (CW - 8) / 2, zh = 32;
 
-  // Zone Date
   doc.setFillColor(252,252,252); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
   doc.roundedRect(ML, y, zw, zh, 2, 2, "FD");
   doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...DARK);
   doc.text("Date :", ML + 5, y + 8);
-  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...MUTED);
+  doc.setFont("helvetica","normal"); doc.setTextColor(...MUTED);
   doc.text("Le ........................................", ML + 5, y + 18);
 
-  // Zone Signature
   const sx = ML + zw + 8;
   doc.setFillColor(252,252,252); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
   doc.roundedRect(sx, y, zw, zh, 2, 2, "FD");
   doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...DARK);
   doc.text("Signature :", sx + 5, y + 8);
-  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...MUTED);
+  doc.setFont("helvetica","normal"); doc.setTextColor(...MUTED);
   doc.text("Bon pour accord", sx + 5, y + 18);
-  // Ligne de signature
   doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
   doc.line(sx + 5, y + 30, sx + zw - 5, y + 30);
-
-  y += zh + 10;
 
   drawPageFooter(doc);
 
