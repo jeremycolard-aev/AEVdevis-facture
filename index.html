@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aix en Vue – Générateur de Factures</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <!-- jsPDF + autotable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <!-- html2canvas for logo -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="header-logo-wrap">
+          <img src="logo.png" alt="Aix en Vue" class="header-logo" id="logoImg" />
+        </div>
+        <div class="header-title-wrap">
+          <h1 class="header-title">Générateur de Factures</h1>
+          <p class="header-sub">Aix en Vue · Association Loi 1901</p>
+        </div>
+      </div>
+      <div class="header-badge">PDF</div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main class="container">
+
+    <!-- SECTION 1 : Références -->
+    <section class="card" id="sec-refs">
+      <div class="card-label">01</div>
+      <h2 class="card-title">Références du document</h2>
+      <div class="grid-3">
+        <div class="field">
+          <label for="numDevis">Numéro de devis</label>
+          <input type="text" id="numDevis" placeholder="DEV-2025-001" />
+        </div>
+        <div class="field">
+          <label for="numFacture">Numéro de facture <span class="req">*</span></label>
+          <input type="text" id="numFacture" placeholder="FAC-2025-001" />
+        </div>
+        <div class="field">
+          <label for="dateFacture">Date de la facture</label>
+          <input type="date" id="dateFacture" />
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 : Client -->
+    <section class="card" id="sec-client">
+      <div class="card-label">02</div>
+      <h2 class="card-title">Informations client</h2>
+      <div class="grid-2">
+        <div class="field">
+          <label for="clientOrg">Organisation <span class="req">*</span></label>
+          <input type="text" id="clientOrg" placeholder="Mairie d'Aix-en-Provence" />
+        </div>
+        <div class="field">
+          <label for="clientSiren">SIREN</label>
+          <input type="text" id="clientSiren" placeholder="123 456 789" />
+        </div>
+        <div class="field">
+          <label for="clientContact">Nom du contact</label>
+          <input type="text" id="clientContact" placeholder="Jean Dupont" />
+        </div>
+        <div class="field">
+          <label for="clientEmail">Email</label>
+          <input type="email" id="clientEmail" placeholder="contact@organisation.fr" />
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 : Prestations -->
+    <section class="card" id="sec-prestations">
+      <div class="card-label">03</div>
+      <h2 class="card-title">Lignes de prestation</h2>
+
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="col-des">Désignation</span>
+          <span class="col-qty">Qté</span>
+          <span class="col-pu">Prix unitaire</span>
+          <span class="col-tot">Total</span>
+          <span class="col-del"></span>
+        </div>
+        <div id="lignes-container"></div>
+      </div>
+
+      <div class="table-footer">
+        <button class="btn-add" id="btnAdd" type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Ajouter une ligne
+        </button>
+        <div class="totaux">
+          <div class="totaux-row">
+            <span>Acompte (40%)</span>
+            <strong id="totAcompte">0,00 €</strong>
+          </div>
+          <div class="totaux-row">
+            <span>Solde (60%)</span>
+            <strong id="totSolde">0,00 €</strong>
+          </div>
+          <div class="totaux-row totaux-main">
+            <span>TOTAL TTC</span>
+            <strong id="totGeneral">0,00 €</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTION -->
+    <div class="action-bar">
+      <div id="alertMsg" class="alert hidden"></div>
+      <button class="btn-generate" id="btnGenerate" type="button">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2v10M6 8l4 4 4-4M3 14v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Générer la facture PDF
+      </button>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="site-footer">
+    <p>Aix en Vue · SIRET 92855251200016 · 23 boulevard François et Emile Zola, 13 100 Aix-en-Provence</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
