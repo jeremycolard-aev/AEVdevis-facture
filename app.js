@@ -373,13 +373,11 @@ function drawFooterBlocs(doc, y) {
 }
 
 function drawTVAMention(doc, y) {
-  doc.setFillColor(254,242,242); doc.setDrawColor(...RED); doc.setLineWidth(0.8);
-  doc.rect(ML, y, CW, 14, "FD");
-  doc.setFillColor(...RED); doc.rect(ML, y, 3, 14, "F");
-  doc.setFont("helvetica","bolditalic"); doc.setFontSize(7.5); doc.setTextColor(100,40,40);
-  const lines = doc.splitTextToSize(`\u26a0  ${ASSO.tvaMention}`, CW - 12);
-  doc.text(lines, ML + 7, y + 5.5);
-  return y + 22;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.setTextColor(...MUTED);
+  doc.text("* " + ASSO.tvaMention, ML, y);
+  return y + 8;
 }
 
 function drawPageFooter(doc) {
