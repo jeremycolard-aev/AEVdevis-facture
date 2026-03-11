@@ -130,9 +130,10 @@ main.container {
   animation: fadeUp 0.4s ease both;
 }
 
-.card:nth-child(1) { animation-delay: 0.05s; }
-.card:nth-child(2) { animation-delay: 0.10s; }
-.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(1) { animation-delay: 0.03s; }
+.card:nth-child(2) { animation-delay: 0.07s; }
+.card:nth-child(3) { animation-delay: 0.11s; }
+.card:nth-child(4) { animation-delay: 0.15s; }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
@@ -163,11 +164,71 @@ main.container {
   letter-spacing: -0.02em;
 }
 
+/* ── TYPE TOGGLE CARD ────────────────────────────────────────────── */
+.card-type {
+  padding: 20px 36px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.card-title-inline {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--black);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.type-toggle {
+  display: flex;
+  gap: 10px;
+}
+
+.type-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.type-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: var(--red-light);
+}
+
+.type-btn.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+  box-shadow: 0 4px 14px rgba(192,57,43,0.25);
+}
+
+.type-btn svg { flex-shrink: 0; }
+
 /* ── GRIDS ───────────────────────────────────────────────────────── */
-.grid-3 {
+.grid-refs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
+  transition: grid-template-columns var(--transition);
+}
+
+/* En mode devis : seulement 2 colonnes (num devis + date) */
+.grid-refs.mode-devis {
+  grid-template-columns: 1fr 1fr;
 }
 
 .grid-2 {
@@ -177,7 +238,17 @@ main.container {
 }
 
 @media (max-width: 640px) {
-  .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  .grid-refs, .grid-refs.mode-devis, .grid-2 { grid-template-columns: 1fr; }
+}
+
+/* Champ numéro de facture caché en mode devis */
+.field-num-facture {
+  overflow: hidden;
+  transition: opacity var(--transition), transform var(--transition);
+}
+
+.field-num-facture.hidden-field {
+  display: none;
 }
 
 /* ── FIELDS ──────────────────────────────────────────────────────── */
@@ -239,11 +310,8 @@ input::placeholder { color: #bbb; }
 
 .table-header .col-qty,
 .table-header .col-pu,
-.table-header .col-tot {
-  text-align: right;
-}
+.table-header .col-tot { text-align: right; }
 
-/* Ligne de prestation */
 .ligne-row {
   display: grid;
   grid-template-columns: 1fr 80px 130px 110px 40px;
@@ -258,7 +326,7 @@ input::placeholder { color: #bbb; }
 .ligne-row:nth-child(even) { background: #fafafa; }
 .ligne-row:hover { background: var(--red-light); }
 
-.ligne-row input[type="text"] { border: none; background: transparent; padding: 6px 4px; font-size: 13.5px; }
+.ligne-row input[type="text"]   { border: none; background: transparent; padding: 6px 4px; font-size: 13.5px; }
 .ligne-row input[type="number"] { border: none; background: transparent; padding: 6px 4px; font-size: 13.5px; text-align: right; }
 .ligne-row input:focus { border: none; box-shadow: none; border-bottom: 1.5px solid var(--red); border-radius: 0; }
 
@@ -286,9 +354,110 @@ input::placeholder { color: #bbb; }
 
 .btn-del:hover { background: #fee; color: var(--red); }
 
+/* ── MOBILE : cartes empilées ────────────────────────────────────── */
 @media (max-width: 640px) {
-  .table-header { grid-template-columns: 1fr 60px 90px 80px 32px; }
-  .ligne-row    { grid-template-columns: 1fr 60px 90px 80px 32px; }
+
+  /* Cacher l'en-tête de tableau */
+  .table-header { display: none; }
+
+  /* Chaque ligne devient une carte */
+  .ligne-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 14px 14px 10px;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+
+  /* Bouton supprimer en haut à droite de la carte */
+  .ligne-row .btn-del {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    background: #f5f5f5;
+    color: #bbb;
+    border-radius: 6px;
+  }
+
+  /* Champ désignation : pleine largeur, bien visible */
+  .ligne-row input[type="text"] {
+    width: 100%;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--black);
+    padding: 6px 0 8px;
+    border-bottom: 1.5px solid var(--border) !important;
+    border-radius: 0;
+    margin-bottom: 10px;
+    padding-right: 40px; /* espace pour le btn-del */
+  }
+  .ligne-row input[type="text"]:focus {
+    border-bottom-color: var(--red) !important;
+  }
+
+  /* Ligne qté + PU + total sur une seule rangée */
+  .ligne-row .mobile-nums {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    align-items: end;
+  }
+
+  /* Labels au-dessus des champs numériques */
+  .ligne-row .mobile-num-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .ligne-row .mobile-num-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  .ligne-row input[type="number"] {
+    width: 100%;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: right;
+    background: #f9f9f9;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 6px;
+    padding: 7px 9px !important;
+  }
+
+  .ligne-row input[type="number"]:focus {
+    border-color: var(--red) !important;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.10) !important;
+  }
+
+  /* Total : fond coloré pour le distinguer */
+  .ligne-row .ligne-total {
+    background: var(--dark);
+    color: white;
+    border-radius: 6px;
+    padding: 7px 9px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* Totaux : pleine largeur sur mobile */
+  .table-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .totaux { min-width: unset; width: 100%; }
+
+  .btn-add { width: 100%; justify-content: center; }
 }
 
 /* ── TABLE FOOTER ────────────────────────────────────────────────── */
@@ -337,9 +506,14 @@ input::placeholder { color: #bbb; }
   padding: 4px 0;
   font-size: 13px;
   color: rgba(255,255,255,0.6);
+  transition: opacity var(--transition), max-height var(--transition);
 }
 
 .totaux-row strong { color: white; font-weight: 500; }
+
+.totaux-row.row-hidden {
+  display: none;
+}
 
 .totaux-main {
   border-top: 1px solid rgba(255,255,255,0.15);
@@ -389,7 +563,6 @@ input::placeholder { color: #bbb; }
 }
 
 .btn-generate:active { transform: translateY(0); }
-
 .btn-generate.loading { opacity: 0.7; pointer-events: none; }
 
 /* ── ALERT ───────────────────────────────────────────────────────── */
