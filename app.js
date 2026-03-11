@@ -486,19 +486,23 @@ function buildPDF() {
   y += 36;
 
   // ══ MENTION TVA ════════════════════════════════════════════════
+  doc.setFont("helvetica", "bolditalic");
+  doc.setFontSize(7.5);
+  const tvaLines = doc.splitTextToSize(`Aix en vue étant une association régie par la Loi 1901, les prestations ne sont pas assujetties à TVA.`, CW - 14);
+  const tvaLineHeight = 4.5;
+  const tvaPadding    = 8;  // top + bottom padding
+  const tvaH = tvaLines.length * tvaLineHeight + tvaPadding;
+
   doc.setFillColor(254, 242, 242);
   doc.setDrawColor(...RED);
   doc.setLineWidth(0.8);
-  doc.rect(ML, y, CW, 14, "FD");
+  doc.rect(ML, y, CW, tvaH, "FD");
   // trait rouge gauche
   doc.setFillColor(...RED);
-  doc.rect(ML, y, 3, 14, "F");
+  doc.rect(ML, y, 3, tvaH, "F");
 
-  doc.setFont("helvetica", "bolditalic");
-  doc.setFontSize(7.5);
   doc.setTextColor(100, 40, 40);
-  const tvaLines = doc.splitTextToSize(`⚠  ${ASSO.tvaMention}`, CW - 12);
-  doc.text(tvaLines, ML + 7, y + 5.5);
+  doc.text(tvaLines, ML + 7, y + 5.5, { lineHeightFactor: 1.4 });
 
   // ══ PIED DE PAGE ═══════════════════════════════════════════════
   const fyBot = PH - 10;
