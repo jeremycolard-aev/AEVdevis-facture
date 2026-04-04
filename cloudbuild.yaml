@@ -1,8 +1,7 @@
 steps:
-  # Étape de déploiement vers Firebase
-  - name: 'gcr.io/cloud-builders/firebase'
+  # Utilisation d'une version spécifique pour éviter l'erreur de "manifest unknown"
+  - name: 'gcr.io/cloud-builders/firebase:v1'
     args: ['deploy', '--project', '$PROJECT_ID', '--only', 'hosting']
 
-# Cette section règle ton problème d'argument invalide
 options:
   logging: CLOUD_LOGGING_ONLY
