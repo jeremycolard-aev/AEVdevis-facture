@@ -2,3 +2,7 @@ steps:
   # Étape de déploiement vers Firebase
   - name: 'gcr.io/cloud-builders/firebase'
     args: ['deploy', '--project', '$PROJECT_ID', '--only', 'hosting']
+
+# Cette section règle ton problème d'argument invalide
+options:
+  logging: CLOUD_LOGGING_ONLY
