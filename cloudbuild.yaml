@@ -1,0 +1,4 @@
+steps:
+  # Étape de déploiement vers Firebase
+  - name: 'gcr.io/cloud-builders/firebase'
+    args: ['deploy', '--project', '$PROJECT_ID', '--only', 'hosting']
