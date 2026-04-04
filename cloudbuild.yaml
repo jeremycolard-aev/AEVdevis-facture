@@ -1,6 +1,6 @@
 steps:
-  # Utilisation d'une version spécifique pour éviter l'erreur de "manifest unknown"
-  - name: 'gcr.io/cloud-builders/firebase:v1'
+  # Utilisation de l'image officielle Firebase 2026
+  - name: 'us-docker.pkg.dev/firebase-cli/us/firebase'
     args: ['deploy', '--project', '$PROJECT_ID', '--only', 'hosting']
 
 options:
