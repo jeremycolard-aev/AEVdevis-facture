@@ -297,7 +297,7 @@ input::placeholder { color: #bbb; }
 
 .table-header {
   display: grid;
-  grid-template-columns: 1fr 80px 130px 110px 40px;
+  grid-template-columns: 1fr auto 40px;
   background: var(--dark);
   color: white;
   padding: 10px 14px;
@@ -314,7 +314,7 @@ input::placeholder { color: #bbb; }
 
 .ligne-row {
   display: grid;
-  grid-template-columns: 1fr 80px 130px 110px 40px;
+  grid-template-columns: 1fr auto 40px;
   gap: 10px;
   padding: 8px 14px;
   border-top: 1px solid var(--border);
