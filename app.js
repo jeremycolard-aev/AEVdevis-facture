@@ -1,6 +1,3 @@
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 /* ══════════════════════════════════════════════════════════════════
    Aix en Vue – Générateur de Devis & Factures
    app.js
@@ -138,7 +135,7 @@ function renderLignes() {
         </div>
         <div class="mobile-num-field">
           <span class="mobile-num-label">Prix unit.</span>
-          <input type="number" min="0" step="10" value="${l.prixUnitaire}"
+          <input type="number" min="0" step="0.01" value="${l.prixUnitaire}"
                  oninput="updateLigne(${l.id},'pu',this.value)" />
         </div>
         <div class="mobile-num-field">
@@ -169,7 +166,8 @@ function formatEur(val) {
 function escHtml(str) {
   return String(str)
     .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
 }
 
 function showAlert(msg) {
@@ -207,6 +205,7 @@ function genererPDF() {
   const numRef = isDevis ? numDevis : numFacture;
   const labelRef = isDevis ? "le numéro de devis" : "le numéro de facture";
   if (!numRef)    { showAlert(`\u26a0\ufe0f Veuillez renseigner ${labelRef}.`); return; }
+  if (!dateDoc)   { showAlert("\u26a0\ufe0f Veuillez renseigner la date du document."); return; }
   if (!clientOrg) { showAlert("\u26a0\ufe0f Veuillez renseigner le nom de l'organisation cliente."); return; }
   if (lignes.every(l => !l.designation.trim())) {
     showAlert("\u26a0\ufe0f Ajoutez au moins une prestation avec une désignation.");
