@@ -160,7 +160,10 @@ function updateTotaux() {
 
 // ── Helpers ────────────────────────────────────────────────────────
 function formatEur(val) {
-  return val.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u20ac";
+  // toLocaleString("fr-FR") uses \u202f (narrow no-break space) as thousands separator;
+  // jsPDF cannot render it and produces garbled output \u2014 replace with regular space.
+  return val.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    .replace(/[\u202f\u00a0]/g, " ") + " \u20ac";
 }
 
 function escHtml(str) {
@@ -274,8 +277,14 @@ function drawSeparator(doc, y) {
 }
 
 function drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, emetteurLabel, clientLabel) {
-  const bw = (CW - 8) / 2;
-  const bh = 32;
+  const bw     = (CW - 8) / 2;
+  const availW = bw - 10;
+
+  // Pre-compute how many lines the email will need so the boxes are tall enough.
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+  const emailLines = clientEmail ? doc.splitTextToSize(clientEmail, availW) : [];
+  const extraRows  = Math.max(0, emailLines.length - 1);
+  const bh         = 32 + extraRows * 5;
 
   // Émetteur
   doc.setFillColor(...LIGHT); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
@@ -298,12 +307,12 @@ function drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail,
   doc.text(clientLabel || "ADRESSÉ À", cx + 5, y + 6);
   doc.setLineWidth(0.2); doc.line(cx + 4, y + 8, cx + bw - 4, y + 8);
   doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(...DARK);
-  doc.text(clientOrg || "—", cx + 5, y + 14);
+  doc.text(doc.splitTextToSize(clientOrg || "—", availW), cx + 5, y + 14);
   doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(80,80,80);
   let cy = y + 20;
   if (clientSiren) { doc.text(`SIREN : ${clientSiren}`, cx + 5, cy); cy += 6; }
   if (clientCont)  { doc.text(`Contact : ${clientCont}`, cx + 5, cy); cy += 6; }
-  if (clientEmail) { doc.text(clientEmail, cx + 5, cy); }
+  if (emailLines.length > 0) { doc.text(emailLines, cx + 5, cy); }
 
   return y + bh + 10;
 }
