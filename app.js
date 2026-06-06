@@ -249,31 +249,31 @@ function newDoc() {
 
 function drawTopStripe(doc) {
   doc.setFillColor(...RED);
-  doc.rect(0, 0, PW, 6, "F");
+  doc.rect(0, 0, PW, 4, "F");
 }
 
 function drawHeader(doc, y) {
   if (logoBase64) {
-    try { doc.addImage(logoBase64, "PNG", ML, y, 36, 22, undefined, "FAST"); } catch(e) {}
+    try { doc.addImage(logoBase64, "PNG", ML, y, 28, 17, undefined, "FAST"); } catch(e) {}
   }
   const rx = PW - MR;
-  doc.setFont("helvetica", "bold");   doc.setFontSize(11); doc.setTextColor(...DARK);
+  doc.setFont("helvetica", "bold");   doc.setFontSize(10.5); doc.setTextColor(...DARK);
   doc.text(ASSO.nom, rx, y + 4, { align: "right" });
-  doc.setFont("helvetica", "italic"); doc.setFontSize(8);  doc.setTextColor(...RED);
-  doc.text(ASSO.sousTitre, rx, y + 9, { align: "right" });
-  doc.setFont("helvetica", "normal"); doc.setFontSize(8);  doc.setTextColor(...MUTED);
-  doc.text(ASSO.statut, rx, y + 14, { align: "right" });
-  doc.text(`${ASSO.adresse} – ${ASSO.cpVille}`, rx, y + 19, { align: "right" });
-  doc.text(`${ASSO.tel}   ${ASSO.email}`, rx, y + 24, { align: "right" });
-  doc.setFontSize(7.5); doc.setTextColor(150,150,150);
-  doc.text(`SIRET : ${ASSO.siret}`, rx, y + 29, { align: "right" });
-  return y + 34;
+  doc.setFont("helvetica", "italic"); doc.setFontSize(7.5); doc.setTextColor(...RED);
+  doc.text(ASSO.sousTitre, rx, y + 8, { align: "right" });
+  doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(...MUTED);
+  doc.text(ASSO.statut, rx, y + 12, { align: "right" });
+  doc.text(`${ASSO.adresse} – ${ASSO.cpVille}`, rx, y + 16, { align: "right" });
+  doc.text(`${ASSO.tel}   ${ASSO.email}`, rx, y + 20, { align: "right" });
+  doc.setFontSize(7); doc.setTextColor(150,150,150);
+  doc.text(`SIRET : ${ASSO.siret}`, rx, y + 24, { align: "right" });
+  return y + 28;
 }
 
 function drawSeparator(doc, y) {
   doc.setDrawColor(...RED); doc.setLineWidth(0.6);
   doc.line(ML, y, PW - MR, y);
-  return y + 8;
+  return y + 5;
 }
 
 function drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, emetteurLabel, clientLabel) {
@@ -284,37 +284,37 @@ function drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail,
   doc.setFont("helvetica", "normal"); doc.setFontSize(8);
   const emailLines = clientEmail ? doc.splitTextToSize(clientEmail, availW) : [];
   const extraRows  = Math.max(0, emailLines.length - 1);
-  const bh         = 32 + extraRows * 5;
+  const bh         = 28 + extraRows * 5;
 
   // Émetteur
   doc.setFillColor(...LIGHT); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
   doc.roundedRect(ML, y, bw, bh, 2, 2, "FD");
   doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...RED);
-  doc.text(emetteurLabel || "ÉMETTEUR", ML + 5, y + 6);
-  doc.setLineWidth(0.2); doc.line(ML + 4, y + 8, ML + bw - 4, y + 8);
-  doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(...DARK);
-  doc.text(ASSO.nom, ML + 5, y + 14);
+  doc.text(emetteurLabel || "ÉMETTEUR", ML + 5, y + 5);
+  doc.setLineWidth(0.2); doc.line(ML + 4, y + 7, ML + bw - 4, y + 7);
+  doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...DARK);
+  doc.text(ASSO.nom, ML + 5, y + 12);
   doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(80,80,80);
-  doc.text(ASSO.adresse, ML + 5, y + 20);
-  doc.text(ASSO.cpVille, ML + 5, y + 25);
-  doc.text(`SIRET : ${ASSO.siret}`, ML + 5, y + 30);
+  doc.text(ASSO.adresse, ML + 5, y + 17);
+  doc.text(ASSO.cpVille, ML + 5, y + 21);
+  doc.text(`SIRET : ${ASSO.siret}`, ML + 5, y + 25);
 
   // Client
   const cx = ML + bw + 8;
   doc.setFillColor(...LIGHT); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
   doc.roundedRect(cx, y, bw, bh, 2, 2, "FD");
   doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...RED);
-  doc.text(clientLabel || "ADRESSÉ À", cx + 5, y + 6);
-  doc.setLineWidth(0.2); doc.line(cx + 4, y + 8, cx + bw - 4, y + 8);
-  doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(...DARK);
-  doc.text(doc.splitTextToSize(clientOrg || "—", availW), cx + 5, y + 14);
+  doc.text(clientLabel || "ADRESSÉ À", cx + 5, y + 5);
+  doc.setLineWidth(0.2); doc.line(cx + 4, y + 7, cx + bw - 4, y + 7);
+  doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...DARK);
+  doc.text(doc.splitTextToSize(clientOrg || "—", availW), cx + 5, y + 12);
   doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(80,80,80);
-  let cy = y + 20;
-  if (clientSiren) { doc.text(`SIREN : ${clientSiren}`, cx + 5, cy); cy += 6; }
-  if (clientCont)  { doc.text(`Contact : ${clientCont}`, cx + 5, cy); cy += 6; }
+  let cy = y + 17;
+  if (clientSiren) { doc.text(`SIREN : ${clientSiren}`, cx + 5, cy); cy += 5; }
+  if (clientCont)  { doc.text(`Contact : ${clientCont}`, cx + 5, cy); cy += 5; }
   if (emailLines.length > 0) { doc.text(emailLines, cx + 5, cy); }
 
-  return y + bh + 10;
+  return y + bh + 7;
 }
 
 function drawTable(doc, y, lignes) {
@@ -333,8 +333,8 @@ function drawTable(doc, y, lignes) {
     head: [["Désignation", "Qté", "Prix forfaitaire", "Total"]],
     body: tableBody,
     margin: { left: ML, right: MR },
-    styles: { font:"helvetica", fontSize:9, cellPadding:{top:5,right:6,bottom:5,left:6}, lineWidth:0.1, lineColor:BORDER },
-    headStyles: { fillColor:RED, textColor:WHITE, fontStyle:"bold", fontSize:9, cellPadding:{top:6,right:6,bottom:6,left:6} },
+    styles: { font:"helvetica", fontSize:8.5, cellPadding:{top:3,right:6,bottom:3,left:6}, lineWidth:0.1, lineColor:BORDER },
+    headStyles: { fillColor:RED, textColor:WHITE, fontStyle:"bold", fontSize:8.5, cellPadding:{top:4,right:6,bottom:4,left:6} },
     columnStyles: {
       0: { cellWidth:"auto" },
       1: { cellWidth:18, halign:"center" },
@@ -344,7 +344,7 @@ function drawTable(doc, y, lignes) {
     alternateRowStyles: { fillColor:[253,248,247] },
     tableLineColor: BORDER, tableLineWidth: 0.2,
   });
-  return doc.lastAutoTable.finalY + 8;
+  return doc.lastAutoTable.finalY + 6;
 }
 
 function drawFooterBlocs(doc, y, conditions) {
@@ -352,43 +352,43 @@ function drawFooterBlocs(doc, y, conditions) {
 
   // RIB
   doc.setFillColor(248,248,248); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
-  doc.roundedRect(ML, y, fw, 28, 2, 2, "FD");
+  doc.roundedRect(ML, y, fw, 24, 2, 2, "FD");
   doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...RED);
-  doc.text("COORDONNÉES BANCAIRES", ML + 5, y + 7);
-  doc.setLineWidth(0.2); doc.line(ML + 4, y + 9, ML + fw - 4, y + 9);
+  doc.text("COORDONNÉES BANCAIRES", ML + 5, y + 6);
+  doc.setLineWidth(0.2); doc.line(ML + 4, y + 8, ML + fw - 4, y + 8);
   doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...DARK);
-  doc.text("IBAN :", ML + 5, y + 16);
-  doc.setFont("helvetica","normal"); doc.text(ASSO.iban, ML + 18, y + 16);
-  doc.setFont("helvetica","bold");   doc.text("BIC :", ML + 5, y + 23);
-  doc.setFont("helvetica","normal"); doc.text(ASSO.bic, ML + 16, y + 23);
+  doc.text("IBAN :", ML + 5, y + 14);
+  doc.setFont("helvetica","normal"); doc.text(ASSO.iban, ML + 18, y + 14);
+  doc.setFont("helvetica","bold");   doc.text("BIC :", ML + 5, y + 20);
+  doc.setFont("helvetica","normal"); doc.text(ASSO.bic, ML + 16, y + 20);
 
   // Conditions
   const cx = ML + fw + 8;
   doc.setFillColor(248,248,248); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
-  doc.roundedRect(cx, y, fw, 28, 2, 2, "FD");
+  doc.roundedRect(cx, y, fw, 24, 2, 2, "FD");
   doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...RED);
-  doc.text("CONDITIONS DE RÈGLEMENT", cx + 5, y + 7);
-  doc.setLineWidth(0.2); doc.line(cx + 4, y + 9, cx + fw - 4, y + 9);
+  doc.text("CONDITIONS DE RÈGLEMENT", cx + 5, y + 6);
+  doc.setLineWidth(0.2); doc.line(cx + 4, y + 8, cx + fw - 4, y + 8);
   doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(80,80,80);
   const condLines = doc.splitTextToSize(conditions || ASSO.conditions, fw - 10);
-  doc.text(condLines, cx + 5, y + 16);
+  doc.text(condLines, cx + 5, y + 14);
 
-  return y + 36;
+  return y + 30;
 }
 
 function drawTVAMention(doc, y) {
   doc.setFont("helvetica", "italic");
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
   doc.text("* " + ASSO.tvaMention, ML, y);
-  return y + 8;
+  return y + 5;
 }
 
 function drawPageFooter(doc) {
   const PH = 297;
-  doc.setFillColor(...RED); doc.rect(0, PH - 6, PW, 6, "F");
+  doc.setFillColor(...RED); doc.rect(0, PH - 4, PW, 4, "F");
   doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(...MUTED);
-  doc.text(`${ASSO.nom}  ·  ${ASSO.statut}  ·  SIRET ${ASSO.siret}`, PW/2, PH - 8, { align:"center" });
+  doc.text(`${ASSO.nom}  ·  ${ASSO.statut}  ·  SIRET ${ASSO.siret}`, PW/2, PH - 6, { align:"center" });
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -400,34 +400,34 @@ function buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, 
   const conditions = document.getElementById("conditions").value.trim() || ASSO.conditions;
 
   drawTopStripe(doc);
-  let y = drawHeader(doc, 12);
+  let y = drawHeader(doc, 7);
   y = drawSeparator(doc, y);
 
   // Bande FACTURE
-  doc.setFillColor(...DARK); doc.roundedRect(ML, y, CW, 18, 2, 2, "F");
-  doc.setFont("helvetica","bold"); doc.setFontSize(18); doc.setTextColor(...WHITE);
-  doc.text("FACTURE", ML + 8, y + 12);
+  doc.setFillColor(...DARK); doc.roundedRect(ML, y, CW, 15, 2, 2, "F");
+  doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor(...WHITE);
+  doc.text("FACTURE", ML + 8, y + 10);
   const rx = PW - MR - 6;
-  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(200,200,200);
-  doc.text("N° Facture :", rx - 22, y + 7,  {align:"right"});
-  doc.text("N° Devis :",   rx - 22, y + 12, {align:"right"});
-  doc.text("Date :",       rx - 22, y + 17, {align:"right"});
+  doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(200,200,200);
+  doc.text("N° Facture :", rx - 22, y + 5,   {align:"right"});
+  doc.text("N° Devis :",   rx - 22, y + 10,  {align:"right"});
+  doc.text("Date :",       rx - 22, y + 14.5,{align:"right"});
   doc.setFont("helvetica","bold"); doc.setTextColor(...WHITE);
-  doc.text(numFacture || "—",     rx, y + 7,  {align:"right"});
-  doc.text(numDevis   || "—",     rx, y + 12, {align:"right"});
-  doc.text(formatDateFR(dateDoc), rx, y + 17, {align:"right"});
-  y += 26;
+  doc.text(numFacture || "—",     rx, y + 5,   {align:"right"});
+  doc.text(numDevis   || "—",     rx, y + 10,  {align:"right"});
+  doc.text(formatDateFR(dateDoc), rx, y + 14.5,{align:"right"});
+  y += 20;
 
   y = drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, "ÉMETTEUR", "FACTURÉ À");
   y = drawTable(doc, y, lignes);
 
   // Total simplifié
-  const tw = 80, tx = PW - MR - tw, th = 22;
+  const tw = 80, tx = PW - MR - tw, th = 14;
   doc.setFillColor(...DARK); doc.roundedRect(tx, y, tw, th, 2, 2, "F");
-  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...WHITE);
-  doc.text("TOTAL TTC :", tx + 4, y + 14);
-  doc.text(formatEur(total), tx + tw - 4, y + 14, {align:"right"});
-  y += th + 10;
+  doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(...WHITE);
+  doc.text("TOTAL TTC :", tx + 4, y + 10);
+  doc.text(formatEur(total), tx + tw - 4, y + 10, {align:"right"});
+  y += th + 7;
 
   y = drawFooterBlocs(doc, y, conditions);
   drawTVAMention(doc, y);
@@ -448,35 +448,35 @@ function buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, cl
   const conditions = document.getElementById("conditions").value.trim() || ASSO.conditions;
 
   drawTopStripe(doc);
-  let y = drawHeader(doc, 12);
+  let y = drawHeader(doc, 7);
   y = drawSeparator(doc, y);
 
   // Bande DEVIS
-  doc.setFillColor(...DARK); doc.roundedRect(ML, y, CW, 18, 2, 2, "F");
-  doc.setFont("helvetica","bold"); doc.setFontSize(18); doc.setTextColor(...WHITE);
-  doc.text("DEVIS", ML + 8, y + 12);
+  doc.setFillColor(...DARK); doc.roundedRect(ML, y, CW, 15, 2, 2, "F");
+  doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor(...WHITE);
+  doc.text("DEVIS", ML + 8, y + 10);
   const rx = PW - MR - 6;
-  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(200,200,200);
-  doc.text("N° Devis :",          rx - 22, y + 7,  {align:"right"});
-  doc.text("Date :",              rx - 22, y + 12, {align:"right"});
-  doc.text("Valable jusqu'au :", rx - 22, y + 17, {align:"right"});
+  doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(200,200,200);
+  doc.text("N° Devis :",          rx - 22, y + 5,   {align:"right"});
+  doc.text("Date :",              rx - 22, y + 10,  {align:"right"});
+  doc.text("Valable jusqu'au :", rx - 22, y + 14.5, {align:"right"});
   doc.setFont("helvetica","bold"); doc.setTextColor(...WHITE);
-  doc.text(numDevis || "—",       rx, y + 7,  {align:"right"});
-  doc.text(formatDateFR(dateDoc), rx, y + 12, {align:"right"});
+  doc.text(numDevis || "—",       rx, y + 5,   {align:"right"});
+  doc.text(formatDateFR(dateDoc), rx, y + 10,  {align:"right"});
   doc.setTextColor(...RED);
-  doc.text(dateValidite(dateDoc), rx, y + 17, {align:"right"});
-  y += 26;
+  doc.text(dateValidite(dateDoc), rx, y + 14.5, {align:"right"});
+  y += 20;
 
   y = drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, "ÉMETTEUR", "ADRESSÉ À");
   y = drawTable(doc, y, lignes);
 
   // Total
-  const tw = 80, tx = PW - MR - tw, th = 22;
+  const tw = 80, tx = PW - MR - tw, th = 14;
   doc.setFillColor(...DARK); doc.roundedRect(tx, y, tw, th, 2, 2, "F");
-  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...WHITE);
-  doc.text("TOTAL :", tx + 4, y + 14);
-  doc.text(formatEur(total), tx + tw - 4, y + 14, {align:"right"});
-  y += th + 10;
+  doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(...WHITE);
+  doc.text("TOTAL :", tx + 4, y + 10);
+  doc.text(formatEur(total), tx + tw - 4, y + 10, {align:"right"});
+  y += th + 7;
 
   // RIB + conditions (comme la facture)
   y = drawFooterBlocs(doc, y, conditions);
@@ -485,37 +485,37 @@ function buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, cl
   y = drawTVAMention(doc, y);
 
   // Bloc "Bon pour accord"
-  if (y + 60 > PH - 20) { doc.addPage(); y = 20; }
+  if (y + 46 > PH - 10) { doc.addPage(); y = 14; }
 
   doc.setFillColor(254,249,245); doc.setDrawColor(...RED); doc.setLineWidth(0.4);
-  doc.roundedRect(ML, y, CW, 16, 2, 2, "FD");
-  doc.setFont("helvetica","italic"); doc.setFontSize(9); doc.setTextColor(80,40,30);
+  doc.roundedRect(ML, y, CW, 12, 2, 2, "FD");
+  doc.setFont("helvetica","italic"); doc.setFontSize(8.5); doc.setTextColor(80,40,30);
   const mentionLines = doc.splitTextToSize(
     "Si ce devis vous convient, merci de nous le retourner signé, précédé de la mention « Bon pour accord ».",
     CW - 12
   );
-  doc.text(mentionLines, ML + 6, y + 6);
-  y += 22;
+  doc.text(mentionLines, ML + 6, y + 5);
+  y += 17;
 
   // Zones date + signature
-  const zw = (CW - 8) / 2, zh = 32;
+  const zw = (CW - 8) / 2, zh = 24;
 
   doc.setFillColor(252,252,252); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
   doc.roundedRect(ML, y, zw, zh, 2, 2, "FD");
   doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...DARK);
-  doc.text("Date :", ML + 5, y + 8);
+  doc.text("Date :", ML + 5, y + 7);
   doc.setFont("helvetica","normal"); doc.setTextColor(...MUTED);
-  doc.text("Le ........................................", ML + 5, y + 18);
+  doc.text("Le ........................................", ML + 5, y + 15);
 
   const sx = ML + zw + 8;
   doc.setFillColor(252,252,252); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
   doc.roundedRect(sx, y, zw, zh, 2, 2, "FD");
   doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(...DARK);
-  doc.text("Signature :", sx + 5, y + 8);
+  doc.text("Signature :", sx + 5, y + 7);
   doc.setFont("helvetica","normal"); doc.setTextColor(...MUTED);
-  doc.text("Bon pour accord", sx + 5, y + 18);
+  doc.text("Bon pour accord", sx + 5, y + 15);
   doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
-  doc.line(sx + 5, y + 30, sx + zw - 5, y + 30);
+  doc.line(sx + 5, y + 22, sx + zw - 5, y + 22);
 
   drawPageFooter(doc);
 
