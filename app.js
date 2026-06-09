@@ -228,12 +228,13 @@ function displayContacts(list) {
     card.innerHTML = `
       <div>
         <div class="flex items-start justify-between mb-4">
-          <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 max-w-[80%] truncate">
-            <i class="fa-solid fa-building mr-1.5 text-[10px]"></i> ${escapeHtml(c.organisation) || 'Sans entité'}
-          </span>
-          <span class="text-[10px] font-mono text-slate-300">#${escapeHtml(c.id)}</span>
+          <span class="text-[10px] font-mono text-slate-300">ID : #${escapeHtml(c.id)}</span>
         </div>
-        <h2 class="text-base font-bold text-slate-900 mb-4">${escapeHtml(c.nom) || 'Nom inconnu'}</h2>
+        <h2 class="text-lg font-extrabold text-slate-900 mb-2 flex items-center gap-2">
+          <i class="fa-solid fa-building text-rose-600 text-sm"></i>
+          ${escapeHtml(c.organisation) || 'Sans entité'}
+        </h2>
+        ${c.nom ? `<p class="text-sm font-semibold text-slate-500 mb-4 flex items-center gap-2"><i class="fa-solid fa-user text-xs text-slate-400"></i> ${escapeHtml(c.nom)}</p>` : '<div class="mb-4"></div>'}
         <div class="space-y-2 text-sm text-slate-600 border-t border-slate-50 pt-3">
           ${c.mobile ? `<p class="flex items-center gap-2"><i class="fa-solid fa-phone text-slate-400 w-4"></i> <a href="tel:${c.mobile}" class="hover:text-rose-600 font-medium">${escapeHtml(c.mobile)}</a></p>` : ''}
           ${c.email ? `<p class="flex items-center gap-2 truncate"><i class="fa-solid fa-envelope text-slate-400 w-4"></i> <a href="mailto:${c.email}" class="hover:text-rose-600 font-medium">${escapeHtml(c.email)}</a></p>` : ''}
