@@ -153,9 +153,12 @@
           <div class="absolute -top-3.5 left-6 bg-rose-700 text-white font-serif text-xs font-black tracking-widest uppercase px-4 py-1.5 rounded-full shadow-md">01</div>
           <h2 class="font-serif text-2xl font-black text-slate-900 mb-6">Références du document</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="flex flex-col gap-2">
-              <label for="numDevis" class="text-xs font-bold text-slate-900 uppercase tracking-wider">Numéro de devis</label>
+            <div class="flex flex-col gap-2" id="fieldNumDevisContainer">
+              <label for="numDevis" id="labelNumDevis" class="text-xs font-bold text-slate-900 uppercase tracking-wider">Numéro de devis</label>
               <input type="text" id="numDevis" readonly class="block w-full px-4 py-3.5 border-2 border-slate-500 rounded-xl bg-slate-100 text-slate-700 font-extrabold cursor-not-allowed outline-none text-base" />
+              <select id="numDevisSelect" class="hidden block w-full px-4 py-3.5 border-2 border-slate-800 rounded-xl focus:ring-4 focus:ring-rose-600 focus:border-rose-600 text-base font-bold text-slate-900 transition-all outline-none bg-white">
+                <!-- Rempli dynamiquement -->
+              </select>
             </div>
             <div id="fieldNumFacture" class="flex flex-col gap-2 transition-all duration-300">
               <label for="numFacture" class="text-xs font-bold text-slate-900 uppercase tracking-wider">Numéro de facture</label>

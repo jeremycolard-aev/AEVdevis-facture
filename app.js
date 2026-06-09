@@ -45,6 +45,36 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btnTypeDevis").addEventListener("click", () => setMode("devis"));
   document.getElementById("btnTypeFacture").addEventListener("click", () => setMode("facture"));
 
+  // Écouteur de sélection du devis pour la facture
+  document.getElementById("numDevisSelect").addEventListener("change", (e) => {
+    const selectedDevisTitle = e.target.value;
+    if (!selectedDevisTitle) return;
+    const devis = store.documents.find(d => d.type === "Devis" && d.titre === selectedDevisTitle);
+    if (devis) {
+      document.getElementById("clientOrg").value = devis.organisation || "";
+      document.getElementById("clientSiren").value = devis.siren || "";
+      document.getElementById("clientContact").value = devis.contact || "";
+      document.getElementById("clientEmail").value = devis.email || "";
+      document.getElementById("clientAddress").value = devis.adresse || "";
+      document.getElementById("conditions").value = devis.condition || ASSO.conditions;
+      
+      lignes = [];
+      if (devis.articles && devis.articles.length > 0) {
+        devis.articles.forEach(art => {
+          lignes.push({
+            id: Date.now() + Math.random(),
+            designation: art.designation || "",
+            quantite: art.quantite || 1,
+            prixUnitaire: art.prixUnitaire || 0
+          });
+        });
+      } else {
+        addLigne();
+      }
+      renderLignes();
+    }
+  });
+
   // État initial du formulaire
   setMode("devis");
 
@@ -103,12 +133,16 @@ function setMode(mode) {
   const btnDevis = document.getElementById("btnTypeDevis");
   const btnFacture = document.getElementById("btnTypeFacture");
   const fieldFac = document.getElementById("fieldNumFacture");
+  const inputDevis = document.getElementById("numDevis");
+  const selectDevis = document.getElementById("numDevisSelect");
 
   if (mode === "devis") {
     btnDevis.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold bg-rose-600 text-white shadow-md shadow-rose-600/20";
     btnFacture.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold bg-transparent text-slate-500 hover:text-slate-800";
     
     fieldFac.classList.add("hidden");
+    inputDevis.classList.remove("hidden");
+    selectDevis.classList.add("hidden");
     document.getElementById("labelDate").textContent = "Date du devis";
     document.getElementById("btnLabel").textContent = "Générer le devis PDF";
   } else {
@@ -116,8 +150,20 @@ function setMode(mode) {
     btnDevis.className = "flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold bg-transparent text-slate-500 hover:text-slate-800";
     
     fieldFac.classList.remove("hidden");
+    inputDevis.classList.add("hidden");
+    selectDevis.classList.remove("hidden");
     document.getElementById("labelDate").textContent = "Date de la facture";
     document.getElementById("btnLabel").textContent = "Générer la facture PDF";
+
+    // Remplir la liste des devis archivés
+    selectDevis.innerHTML = '<option value="">— Sélectionner un devis —</option>';
+    const allDevis = store.documents.filter(d => d.type === "Devis");
+    allDevis.forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = d.titre;
+      opt.textContent = `${d.titre} (${d.organisation || 'Sans entité'})`;
+      selectDevis.appendChild(opt);
+    });
   }
 }
 
@@ -329,6 +375,12 @@ function convertDevisToFacture(docId) {
   const devis = store.documents.find(d => d.id === docId);
   if (!devis) return;
   
+  // Basculer en mode Facture (cela remplit la liste des devis dans le select)
+  setMode("facture");
+
+  // Sélectionner le numéro du devis dans la liste
+  document.getElementById("numDevisSelect").value = devis.titre || "";
+  
   // Pré-remplir les champs client
   document.getElementById("clientOrg").value = devis.organisation || "";
   document.getElementById("clientSiren").value = devis.siren || "";
@@ -351,9 +403,6 @@ function convertDevisToFacture(docId) {
   } else {
     addLigne();
   }
-  
-  // Basculer en mode Facture
-  setMode("facture");
   
   // Recalculer le numéro automatique de facture
   updateDocumentNumbers();
@@ -604,7 +653,9 @@ function showError(msg) {
 // ── Génération et Envoi PDF ────────────────────────────────────────
 async function genererPDF() {
   const isDevis     = modeDoc === "devis";
-  const numDevis    = document.getElementById("numDevis").value.trim();
+  const numDevis    = isDevis 
+    ? document.getElementById("numDevis").value.trim()
+    : document.getElementById("numDevisSelect").value.trim();
   const numFacture  = document.getElementById("numFacture").value.trim();
   const dateDoc     = document.getElementById("dateDoc").value;
   const clientOrg   = document.getElementById("clientOrg").value.trim();
@@ -615,7 +666,8 @@ async function genererPDF() {
 
   // Validation
   const numRef = isDevis ? numDevis : numFacture;
-  if (!numRef)    { showAlert("Numéro de document non initialisé."); return; }
+  if (!numRef)    { showAlert(isDevis ? "Numéro de devis non initialisé." : "Numéro de facture non initialisé."); return; }
+  if (!isDevis && !numDevis) { showAlert("Veuillez sélectionner le numéro de devis associé."); return; }
   if (!dateDoc)   { showAlert("Veuillez renseigner la date du document."); return; }
   if (!clientOrg) { showAlert("Veuillez renseigner le nom de l'organisation cliente."); return; }
   if (!clientAddress) { showAlert("Veuillez renseigner l'adresse du client."); return; }
