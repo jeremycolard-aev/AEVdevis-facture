@@ -297,10 +297,19 @@ function displayDocuments(list) {
       </div>
       
       <div class="pt-4 border-t border-slate-50 flex items-center justify-between gap-3">
-        <a href="${escapeHtml(d.url)}" target="_blank" 
-           class="inline-flex items-center gap-2 text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-100 hover:border-rose-600 px-4 py-2.5 rounded-xl transition-all shadow-sm">
-          <i class="fa-solid fa-file-pdf"></i> PDF
-        </a>
+        <div class="flex items-center gap-2">
+          <a href="${escapeHtml(d.url)}" target="_blank" 
+             class="inline-flex items-center gap-2 text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-100 hover:border-rose-600 px-4 py-2.5 rounded-xl transition-all shadow-sm">
+            <i class="fa-solid fa-file-pdf"></i> PDF
+          </a>
+          ${isDevis ? `
+          <button onclick="convertDevisToFacture('${escJs(d.id)}')" 
+                  class="inline-flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-white hover:bg-indigo-600 border border-indigo-100 hover:border-indigo-600 px-3 py-2.5 rounded-xl transition-all shadow-sm"
+                  title="Créer une facture à partir de ce devis">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Facturer
+          </button>
+          ` : ''}
+        </div>
         <button onclick="confirmDeleteDocument('${escJs(d.id)}', '${escJs(d.titre)}')" 
                 class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-rose-600 hover:bg-rose-50 px-3 py-2.5 rounded-xl transition-all">
           <i class="fa-solid fa-trash-can"></i> Supprimer
@@ -309,6 +318,47 @@ function displayDocuments(list) {
     `;
     target.appendChild(card);
   });
+}
+
+// ── Conversion de Devis en Facture ──────────────────────────────────
+function convertDevisToFacture(docId) {
+  const devis = store.documents.find(d => d.id === docId);
+  if (!devis) return;
+  
+  // Pré-remplir les champs client
+  document.getElementById("clientOrg").value = devis.organisation || "";
+  document.getElementById("clientSiren").value = devis.siren || "";
+  document.getElementById("clientContact").value = devis.contact || "";
+  document.getElementById("clientEmail").value = devis.email || "";
+  document.getElementById("clientAddress").value = devis.adresse || "";
+  document.getElementById("conditions").value = devis.condition || ASSO.conditions;
+  
+  // Remplir les prestations
+  lignes = [];
+  if (devis.articles && devis.articles.length > 0) {
+    devis.articles.forEach(art => {
+      lignes.push({
+        id: Date.now() + Math.random(),
+        designation: art.designation || "",
+        quantite: art.quantite || 1,
+        prixUnitaire: art.prixUnitaire || 0
+      });
+    });
+  } else {
+    addLigne();
+  }
+  
+  // Basculer en mode Facture
+  setMode("facture");
+  
+  // Recalculer le numéro automatique de facture
+  updateDocumentNumbers();
+  
+  // Re-générer les lignes prestations du formulaire
+  renderLignes();
+  
+  // Rediriger vers l'onglet Formulaire
+  switchTab("generator");
 }
 
 // ── Suppression d'un document ──────────────────────────────────────
@@ -558,7 +608,18 @@ async function genererPDF() {
         action: "createDocument",
         title: numRef,
         pdfBase64: pdfBase64,
-        type: modeDoc
+        type: modeDoc,
+        clientOrg: clientOrg,
+        clientSiren: clientSiren,
+        clientCont: clientCont,
+        clientEmail: clientEmail,
+        clientAddress: clientAddress,
+        conditions: conditions,
+        articles: lignes.filter(l => l.designation.trim()).map(l => ({
+          designation: l.designation,
+          quantite: l.quantite,
+          prixUnitaire: l.prixUnitaire
+        }))
       };
 
       const response = await fetch(WEB_APP_URL, {
@@ -577,7 +638,14 @@ async function genererPDF() {
           titre: numRef,
           url: result.url,
           type: isDevis ? "Devis" : "Facture",
-          datetime: result.datetime
+          datetime: result.datetime,
+          organisation: clientOrg,
+          siren: clientSiren,
+          contact: clientCont,
+          email: clientEmail,
+          adresse: clientAddress,
+          condition: conditions,
+          articles: payload.articles
         });
 
         // Téléchargement client-side pour l'utilisateur

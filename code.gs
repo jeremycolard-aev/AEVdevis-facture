@@ -29,7 +29,7 @@ function doPost(e) {
 }
 
 /**
- * Récupère et filtre les données des feuilles "contact" et "document"
+ * Récupère et filtre les données des feuilles "contact", "document" et "articles"
  */
 function getAllData(spreadsheetId) {
   try {
@@ -62,7 +62,29 @@ function getAllData(spreadsheetId) {
       });
     }
     
-    // ---- SECTION 2 : LES DOCUMENTS ----
+    // ---- SECTION 2 : LES ARTICLES (DÉTAILS DES PRESTATIONS) ----
+    var articleSheet = ss.getSheetByName("articles");
+    var articlesMap = {};
+    if (articleSheet) {
+      var artValues = articleSheet.getDataRange().getValues();
+      for (var k = 1; k < artValues.length; k++) {
+        var aRow = artValues[k];
+        var parentId = aRow[1] ? aRow[1].toString().trim() : "";
+        if (!parentId) continue;
+        
+        if (!articlesMap[parentId]) {
+          articlesMap[parentId] = [];
+        }
+        articlesMap[parentId].push({
+          id: aRow[0] ? aRow[0].toString().trim() : "",
+          designation: aRow[2] ? aRow[2].toString().trim() : "",
+          quantite: parseFloat(aRow[3]) || 0,
+          prixUnitaire: parseFloat(aRow[4]) || 0
+        });
+      }
+    }
+    
+    // ---- SECTION 3 : LES DOCUMENTS ----
     var docSheet = ss.getSheetByName("document");
     if (docSheet) {
       var docValues = docSheet.getDataRange().getValues();
@@ -80,12 +102,23 @@ function getAllData(spreadsheetId) {
           continue; // On ignore totalement les autres dossiers
         }
         
+        var docId = dRow[0] ? dRow[0].toString().trim() : "";
+        
         responseData.documents.push({
-          id: dRow[0] ? dRow[0].toString().trim() : "",
+          id: docId,
           titre: dRow[1] ? dRow[1].toString().trim() : "",
           url: dRow[3] ? dRow[3].toString().trim() : "",
           type: typeDoc,
-          datetime: dRow[5] ? dRow[5].toString().trim() : ""
+          datetime: dRow[5] ? dRow[5].toString().trim() : "",
+          // Nouveaux champs récupérés : H (colonne 8), I (colonne 9)...
+          organisation: dRow[7] ? dRow[7].toString().trim() : "",
+          siren: dRow[8] ? dRow[8].toString().trim() : "",
+          contact: dRow[9] ? dRow[9].toString().trim() : "",
+          email: dRow[10] ? dRow[10].toString().trim() : "",
+          adresse: dRow[11] ? dRow[11].toString().trim() : "",
+          condition: dRow[12] ? dRow[12].toString().trim() : "",
+          // Liste des articles associés
+          articles: articlesMap[docId] || []
         });
       }
       
@@ -105,7 +138,7 @@ function getAllData(spreadsheetId) {
 }
 
 /**
- * Crée un fichier PDF sur Google Drive et ajoute sa ligne correspondante dans la feuille "document"
+ * Crée un fichier PDF sur Google Drive et ajoute sa ligne correspondante dans la feuille "document" + "articles"
  */
 function createDocument(spreadsheetId, data) {
   try {
@@ -140,13 +173,36 @@ function createDocument(spreadsheetId, data) {
     var formattedDate = Utilities.formatDate(new Date(), "Europe/Paris", "dd/MM/yyyy HH:mm:ss");
     
     sheet.appendRow([
-      uniqueId,       // A: uniqueid
-      title,          // B: titre
-      "",             // C: laisser vide
-      fileUrl,        // D: url du pdf
-      folderCode,     // E: dossier
-      formattedDate   // F: datetime
+      uniqueId,                    // A: uniqueid
+      title,                       // B: titre
+      "",                          // C: laisser vide
+      fileUrl,                     // D: url du pdf
+      folderCode,                  // E: dossier
+      formattedDate,               // F: datetime
+      "",                          // G: laisser vide
+      data.clientOrg || "",        // H: Organisation
+      data.clientSiren || "",      // I: SIREN/SIRET
+      data.clientCont || "",       // J: Nom du contact
+      data.clientEmail || "",      // K: Email
+      data.clientAddress || "",    // L: Adresse complete
+      data.conditions || ""        // M: Condition
     ]);
+    
+    // Ajouter les prestations correspondantes dans la table enfant "articles"
+    var artSheet = ss.getSheetByName("articles");
+    if (artSheet && data.articles && data.articles.length > 0) {
+      for (var i = 0; i < data.articles.length; i++) {
+        var art = data.articles[i];
+        var artId = Utilities.getUuid().substring(0, 8);
+        artSheet.appendRow([
+          artId,                     // A: uniqueid
+          uniqueId,                  // B: id du parent
+          art.designation || "",     // C: designation
+          art.quantite || 0,         // D: quantité
+          art.prixUnitaire || 0      // E: prix unitaire
+        ]);
+      }
+    }
     
     return ContentService.createTextOutput(JSON.stringify({ 
       success: true, 
@@ -162,7 +218,7 @@ function createDocument(spreadsheetId, data) {
 }
 
 /**
- * Supprime une ligne de document basée sur son ID unique (Colonne A)
+ * Supprime une ligne de document basée sur son ID unique (Colonne A) ainsi que ses articles enfants
  */
 function deleteDocumentRow(spreadsheetId, docId) {
   try {
@@ -172,6 +228,20 @@ function deleteDocumentRow(spreadsheetId, docId) {
     }
     
     var ss = SpreadsheetApp.openById(spreadsheetId);
+    
+    // 1. Suppression dans la table enfant "articles"
+    var artSheet = ss.getSheetByName("articles");
+    if (artSheet) {
+      var artValues = artSheet.getDataRange().getValues();
+      // On parcourt du bas vers le haut pour éviter le décalage des index de lignes
+      for (var k = artValues.length - 1; k >= 1; k--) {
+        if (artValues[k][1].toString().trim() === docId.toString().trim()) {
+          artSheet.deleteRow(k + 1);
+        }
+      }
+    }
+    
+    // 2. Suppression dans la table parent "document"
     var sheet = ss.getSheetByName("document");
     if (!sheet) {
       return ContentService.createTextOutput(JSON.stringify({ success: false, error: "La feuille 'document' est introuvable." }))
@@ -181,12 +251,11 @@ function deleteDocumentRow(spreadsheetId, docId) {
     var values = sheet.getDataRange().getValues();
     var hasBeenDeleted = false;
     
-    // Recherche de l'ID en partant du bas vers le haut
     for (var i = values.length - 1; i >= 1; i--) {
       if (values[i][0].toString().trim() === docId.toString().trim()) {
-        sheet.deleteRow(i + 1); // L'index dans l'API Sheet commence à 1 (le tableau values commence à 0)
+        sheet.deleteRow(i + 1);
         hasBeenDeleted = true;
-        break; // Stop dès qu'on a trouvé et supprimé l'élément
+        break; // Stop dès qu'on a trouvé et supprimé l'élément parent
       }
     }
     
