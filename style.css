@@ -241,6 +241,12 @@ main.container {
   .grid-refs, .grid-refs.mode-devis, .grid-2 { grid-template-columns: 1fr; }
 }
 
+@media (min-width: 641px) {
+  .field-full-width {
+    grid-column: span 2;
+  }
+}
+
 /* Champ numéro de facture caché en mode devis */
 .field-num-facture {
   overflow: hidden;

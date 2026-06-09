@@ -203,6 +203,7 @@ function genererPDF() {
   const clientSiren = document.getElementById("clientSiren").value.trim();
   const clientCont  = document.getElementById("clientContact").value.trim();
   const clientEmail = document.getElementById("clientEmail").value.trim();
+  const clientAddress = document.getElementById("clientAddress").value.trim();
 
   // Validation
   const numRef = isDevis ? numDevis : numFacture;
@@ -210,6 +211,7 @@ function genererPDF() {
   if (!numRef)    { showAlert(`\u26a0\ufe0f Veuillez renseigner ${labelRef}.`); return; }
   if (!dateDoc)   { showAlert("\u26a0\ufe0f Veuillez renseigner la date du document."); return; }
   if (!clientOrg) { showAlert("\u26a0\ufe0f Veuillez renseigner le nom de l'organisation cliente."); return; }
+  if (!clientAddress) { showAlert("\u26a0\ufe0f Veuillez renseigner l'adresse du client."); return; }
   if (lignes.every(l => !l.designation.trim())) {
     showAlert("\u26a0\ufe0f Ajoutez au moins une prestation avec une désignation.");
     return;
@@ -220,8 +222,8 @@ function genererPDF() {
 
   setTimeout(() => {
     try {
-      isDevis ? buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, clientEmail)
-              : buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, clientCont, clientEmail);
+      isDevis ? buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, clientEmail, clientAddress)
+              : buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, clientCont, clientEmail, clientAddress);
     } finally {
       btn.classList.remove("loading");
     }
@@ -276,15 +278,27 @@ function drawSeparator(doc, y) {
   return y + 5;
 }
 
-function drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, emetteurLabel, clientLabel) {
+function drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, clientAddress, emetteurLabel, clientLabel) {
   const bw     = (CW - 8) / 2;
   const availW = bw - 10;
 
-  // Pre-compute how many lines the email will need so the boxes are tall enough.
+  // Pre-compute lines to calculate height dynamically
+  doc.setFont("helvetica", "bold"); doc.setFontSize(8.5);
+  const orgLines = doc.splitTextToSize(clientOrg || "—", availW);
+
   doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+  const addrLines = clientAddress ? doc.splitTextToSize(clientAddress, availW) : [];
   const emailLines = clientEmail ? doc.splitTextToSize(clientEmail, availW) : [];
-  const extraRows  = Math.max(0, emailLines.length - 1);
-  const bh         = 28 + extraRows * 5;
+
+  // Compute heights dynamically
+  let cy = y + 12;
+  cy += orgLines.length * 4.5;
+  cy += addrLines.length * 4;
+  if (clientSiren) cy += 4;
+  if (clientCont)  cy += 4;
+  cy += emailLines.length * 4;
+
+  const bh = Math.max(28, cy - y + 1);
 
   // Émetteur
   doc.setFillColor(...LIGHT); doc.setDrawColor(...BORDER); doc.setLineWidth(0.3);
@@ -306,13 +320,29 @@ function drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail,
   doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...RED);
   doc.text(clientLabel || "ADRESSÉ À", cx + 5, y + 5);
   doc.setLineWidth(0.2); doc.line(cx + 4, y + 7, cx + bw - 4, y + 7);
+
+  // Render Client Text
   doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...DARK);
-  doc.text(doc.splitTextToSize(clientOrg || "—", availW), cx + 5, y + 12);
+  doc.text(orgLines, cx + 5, y + 12);
+
   doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(80,80,80);
-  let cy = y + 17;
-  if (clientSiren) { doc.text(`SIREN : ${clientSiren}`, cx + 5, cy); cy += 5; }
-  if (clientCont)  { doc.text(`Contact : ${clientCont}`, cx + 5, cy); cy += 5; }
-  if (emailLines.length > 0) { doc.text(emailLines, cx + 5, cy); }
+  let textY = y + 12 + orgLines.length * 4.5;
+  if (addrLines.length > 0) {
+    doc.text(addrLines, cx + 5, textY);
+    textY += addrLines.length * 4;
+  }
+  if (clientSiren) {
+    doc.text(`SIREN : ${clientSiren}`, cx + 5, textY);
+    textY += 4;
+  }
+  if (clientCont) {
+    doc.text(`Contact : ${clientCont}`, cx + 5, textY);
+    textY += 4;
+  }
+  if (emailLines.length > 0) {
+    doc.text(emailLines, cx + 5, textY);
+    textY += emailLines.length * 4;
+  }
 
   return y + bh + 7;
 }
@@ -394,7 +424,7 @@ function drawPageFooter(doc) {
 // ══════════════════════════════════════════════════════════════════
 //  BUILD FACTURE PDF
 // ══════════════════════════════════════════════════════════════════
-function buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, clientCont, clientEmail) {
+function buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, clientCont, clientEmail, clientAddress) {
   const doc        = newDoc();
   const total      = lignes.reduce((s,l) => s + l.quantite * l.prixUnitaire, 0);
   const conditions = document.getElementById("conditions").value.trim() || ASSO.conditions;
@@ -418,7 +448,7 @@ function buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, 
   doc.text(formatDateFR(dateDoc), rx, y + 14.5,{align:"right"});
   y += 20;
 
-  y = drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, "ÉMETTEUR", "FACTURÉ À");
+  y = drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, clientAddress, "ÉMETTEUR", "FACTURÉ À");
   y = drawTable(doc, y, lignes);
 
   // Total simplifié
@@ -441,7 +471,7 @@ function buildFacturePDF(numDevis, numFacture, dateDoc, clientOrg, clientSiren, 
 // ══════════════════════════════════════════════════════════════════
 //  BUILD DEVIS PDF
 // ══════════════════════════════════════════════════════════════════
-function buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, clientEmail) {
+function buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, clientEmail, clientAddress) {
   const doc        = newDoc();
   const total      = lignes.reduce((s,l) => s + l.quantite * l.prixUnitaire, 0);
   const PH         = 297;
@@ -467,7 +497,7 @@ function buildDevisPDF(numDevis, dateDoc, clientOrg, clientSiren, clientCont, cl
   doc.text(dateValidite(dateDoc), rx, y + 14.5, {align:"right"});
   y += 20;
 
-  y = drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, "ÉMETTEUR", "ADRESSÉ À");
+  y = drawClientBloc(doc, y, clientOrg, clientSiren, clientCont, clientEmail, clientAddress, "ÉMETTEUR", "ADRESSÉ À");
   y = drawTable(doc, y, lignes);
 
   // Total
