@@ -3,147 +3,254 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aix en Vue – Générateur de Devis & Factures</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <title>Aix en Vue – Hub Administration & Facturation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-serif {
+      font-family: 'Playfair Display', serif;
+    }
+    .glassmorphism {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+  </style>
 </head>
-<body>
+<body class="bg-[#faf9f6] text-[#1a1a1a] min-h-screen flex flex-col justify-between">
 
-  <!-- ── HEADER ── -->
-  <header class="site-header">
-    <div class="header-inner">
-      <div class="header-brand">
-        <div class="header-logo-wrap">
-          <img src="logo.png" alt="Aix en Vue" class="header-logo" id="logoImg" />
-        </div>
-        <div class="header-title-wrap">
-          <h1 class="header-title">Générateur de Documents</h1>
-          <p class="header-sub">Aix en Vue · Association Loi 1901</p>
-        </div>
+  <!-- ── LOADING OVERLAY ── -->
+  <div id="global-loader" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[999] flex flex-col items-center justify-center transition-all duration-300 hidden">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm mx-4 text-center">
+      <div class="relative w-16 h-16 mb-4">
+        <div class="absolute inset-0 rounded-full border-4 border-rose-100"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-rose-600 border-t-transparent animate-spin"></div>
       </div>
-      <div class="header-badge">PDF</div>
+      <p id="global-loader-text" class="text-slate-800 font-semibold text-lg">Synchronisation avec Google Sheets...</p>
+      <p class="text-slate-400 text-xs mt-2">Veuillez patienter quelques instants</p>
     </div>
-  </header>
+  </div>
 
-  <!-- ── MAIN ── -->
-  <main class="container">
-
-    <!-- SECTION 0 : Type de document -->
-    <section class="card card-type" id="sec-type">
-      <h2 class="card-title-inline">Type de document</h2>
-      <div class="type-toggle">
-        <button class="type-btn active" id="btnTypeDevis" data-type="devis" type="button">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 2h9l3 3v11H3V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 2v4h4M6 9h6M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Devis
-        </button>
-        <button class="type-btn" id="btnTypeFacture" data-type="facture" type="button">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 2h9l3 3v11H3V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 2v4h4M6 7h6M6 10h6M6 13h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Facture
-        </button>
-      </div>
-    </section>
-
-    <!-- SECTION 1 : Références -->
-    <section class="card" id="sec-refs">
-      <div class="card-label">01</div>
-      <h2 class="card-title">Références du document</h2>
-      <div class="grid-refs" id="gridRefs">
-        <div class="field">
-          <label for="numDevis" id="labelNumDevis">Numéro de devis <span class="req">*</span></label>
-          <input type="text" id="numDevis" placeholder="DEV-2025-001" />
-        </div>
-        <div class="field field-num-facture" id="fieldNumFacture">
-          <label for="numFacture">Numéro de facture <span class="req">*</span></label>
-          <input type="text" id="numFacture" placeholder="FAC-2025-001" />
-        </div>
-        <div class="field">
-          <label for="dateDoc" id="labelDate">Date du devis</label>
-          <input type="date" id="dateDoc" />
+  <div>
+    <!-- ── HEADER ── -->
+    <header class="bg-slate-900 text-white shadow-lg border-b-4 border-rose-600 sticky top-0 z-[100]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-white rounded-xl overflow-hidden flex items-center justify-center p-1 shadow-inner">
+              <img src="logo.png" alt="Aix en Vue" class="object-contain w-full h-full" id="logoImg" />
+            </div>
+            <div>
+              <h1 class="font-serif text-lg sm:text-xl font-black tracking-tight text-white flex items-center gap-2">
+                Aix en Vue
+              </h1>
+              <p class="text-[10px] text-slate-400 font-medium tracking-widest uppercase">Association Loi 1901</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="global-counter" class="text-xs px-3 py-1.5 rounded-full font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 shadow-sm">
+              Chargement...
+            </span>
+          </div>
         </div>
       </div>
-    </section>
+    </header>
 
-    <!-- SECTION 2 : Client -->
-    <section class="card" id="sec-client">
-      <div class="card-label">02</div>
-      <h2 class="card-title">Informations client</h2>
-      <div class="grid-2">
-        <div class="field">
-          <label for="clientOrg">Organisation <span class="req">*</span></label>
-          <input type="text" id="clientOrg" placeholder="Mairie d'Aix-en-Provence" />
-        </div>
-        <div class="field">
-          <label for="clientSiren">SIREN</label>
-          <input type="text" id="clientSiren" placeholder="123 456 789" />
-        </div>
-        <div class="field">
-          <label for="clientContact">Nom du contact</label>
-          <input type="text" id="clientContact" placeholder="Jean Dupont" />
-        </div>
-        <div class="field">
-          <label for="clientEmail">Email</label>
-          <input type="email" id="clientEmail" placeholder="contact@organisation.fr" />
-        </div>
-        <div class="field field-full-width">
-          <label for="clientAddress">Adresse <span class="req">*</span></label>
-          <input type="text" id="clientAddress" placeholder="23 boulevard François et Emile Zola, 13100 Aix-en-Provence" />
-        </div>
-      </div>
-    </section>
+    <!-- ── MAIN CONTENT ── -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
 
-    <!-- SECTION 3 : Prestations -->
-    <section class="card" id="sec-prestations">
-      <div class="card-label">03</div>
-      <h2 class="card-title">Lignes de prestation</h2>
-
-      <div class="table-wrap">
-        <div class="table-header">
-          <span class="col-des">Désignation</span>
-          <span class="col-qty">Qté / Prix / Total</span>
-          <span class="col-del"></span>
-        </div>
-        <div id="lignes-container"></div>
+      <!-- Navigation Tabs -->
+      <div class="border-b border-slate-200 mb-8">
+        <nav class="flex space-x-8" aria-label="Tabs">
+          <button id="btn-tab-generator" onclick="switchTab('generator')" 
+                  class="border-b-2 border-rose-600 text-rose-600 px-1 pb-4 text-sm font-semibold flex items-center gap-2 focus:outline-none transition-all">
+            <i class="fa-solid fa-file-signature text-base"></i> Nouveau Document
+          </button>
+          <button id="btn-tab-contacts" onclick="switchTab('contacts')" 
+                  class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 px-1 pb-4 text-sm font-semibold flex items-center gap-2 focus:outline-none transition-all">
+            <i class="fa-solid fa-address-book text-base"></i> Contacts
+          </button>
+          <button id="btn-tab-documents" onclick="switchTab('documents')" 
+                  class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 px-1 pb-4 text-sm font-semibold flex items-center gap-2 focus:outline-none transition-all">
+            <i class="fa-solid fa-folder-open text-base"></i> Archive Documents
+          </button>
+        </nav>
       </div>
 
-      <div class="table-footer">
-        <button class="btn-add" id="btnAdd" type="button">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          Ajouter une ligne
-        </button>
-        <div class="totaux">
-          <div class="totaux-row totaux-main">
-            <span>TOTAL</span>
-            <strong id="totGeneral">0,00 €</strong>
+      <!-- Search Bar (hidden in generator tab by default) -->
+      <div id="search-bar-container" class="mb-8 hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 transition-all duration-300 hover:shadow-md">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+            </div>
+            <input type="text" id="search-input" oninput="handleSearch()"
+                   class="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm transition-all placeholder-slate-400 bg-slate-50 focus:bg-white outline-none" 
+                   placeholder="Rechercher...">
           </div>
         </div>
       </div>
 
-      <!-- Conditions de règlement -->
-      <div class="field conditions-field">
-        <label for="conditions">Conditions de règlement</label>
-        <input type="text" id="conditions" value="Paiement le jour de la prestation" />
+      <!-- Error State Banner -->
+      <div id="error-state" class="hidden bg-rose-50 border-l-4 border-rose-600 p-4 rounded-r-xl mb-8 shadow-sm">
+        <div class="flex items-start">
+          <div class="flex-shrink-0"><i class="fa-solid fa-circle-exclamation text-rose-600 text-xl"></i></div>
+          <div class="ml-3">
+            <h3 class="text-sm font-bold text-rose-900">Erreur de liaison</h3>
+            <p id="error-message" class="mt-1 text-sm text-rose-700 font-medium"></p>
+          </div>
+        </div>
       </div>
-    </section>
 
-    <!-- ACTION -->
-    <div class="action-bar">
-      <div id="alertMsg" class="alert hidden"></div>
-      <button class="btn-generate" id="btnGenerate" type="button">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2v10M6 8l4 4 4-4M3 14v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span id="btnLabel">Générer le devis PDF</span>
-      </button>
-    </div>
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden text-center py-20 bg-white rounded-2xl shadow-sm border border-slate-100">
+        <i class="fa-solid fa-box-open text-slate-300 text-6xl mb-4"></i>
+        <h3 class="text-lg font-bold text-slate-700">Aucun élément trouvé</h3>
+        <p class="mt-1 text-sm text-slate-400">Modifiez les termes de votre recherche ou vérifiez vos feuilles de calcul.</p>
+      </div>
 
-  </main>
+      <!-- TAB 1: GENERATOR FORM -->
+      <div id="container-generator" class="space-y-8">
+        
+        <!-- Document Type Selector -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col sm:flex-row items-center gap-6">
+          <h2 class="font-serif text-lg font-black text-slate-900">Type de document</h2>
+          <div class="flex bg-slate-100 p-1.5 rounded-xl w-full sm:w-auto">
+            <button class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+                    id="btnTypeDevis" data-type="devis" type="button">
+              <i class="fa-solid fa-file-lines text-base"></i> Devis
+            </button>
+            <button class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+                    id="btnTypeFacture" data-type="facture" type="button">
+              <i class="fa-solid fa-file-invoice-dollar text-base"></i> Facture
+            </button>
+          </div>
+        </section>
+
+        <!-- References Card -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8 relative">
+          <div class="absolute -top-3.5 left-6 bg-rose-600 text-white font-serif text-xs font-black tracking-widest uppercase px-4 py-1.5 rounded-full shadow-md">01</div>
+          <h2 class="font-serif text-xl font-black text-slate-900 mb-6">Références du document</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="flex flex-col gap-2">
+              <label for="numDevis" class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Numéro de devis</label>
+              <input type="text" id="numDevis" readonly class="block w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500 font-semibold cursor-not-allowed outline-none" />
+            </div>
+            <div id="fieldNumFacture" class="flex flex-col gap-2 transition-all duration-300">
+              <label for="numFacture" class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Numéro de facture</label>
+              <input type="text" id="numFacture" readonly class="block w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500 font-semibold cursor-not-allowed outline-none" />
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="dateDoc" id="labelDate" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Date du devis</label>
+              <input type="date" id="dateDoc" class="block w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm transition-all outline-none font-medium" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Client Info Card -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8 relative">
+          <div class="absolute -top-3.5 left-6 bg-rose-600 text-white font-serif text-xs font-black tracking-widest uppercase px-4 py-1.5 rounded-full shadow-md">02</div>
+          <h2 class="font-serif text-xl font-black text-slate-900 mb-6">Informations client</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-2">
+              <label for="clientOrg" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Organisation <span class="text-rose-600">*</span></label>
+              <input type="text" id="clientOrg" placeholder="Ex: Mairie d'Aix-en-Provence" class="block w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm transition-all outline-none" />
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="clientSiren" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">SIREN / SIRET</label>
+              <input type="text" id="clientSiren" placeholder="Ex: 123 456 789" class="block w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm transition-all outline-none" />
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="clientContact" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nom du contact</label>
+              <input type="text" id="clientContact" placeholder="Ex: Jean Dupont" class="block w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm transition-all outline-none" />
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="clientEmail" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Email</label>
+              <input type="email" id="clientEmail" placeholder="Ex: contact@organisation.fr" class="block w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm transition-all outline-none" />
+            </div>
+            <div class="flex flex-col gap-2 md:col-span-2">
+              <label for="clientAddress" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Adresse complète <span class="text-rose-600">*</span></label>
+              <input type="text" id="clientAddress" placeholder="Ex: 12 rue de la République, 13100 Aix-en-Provence" class="block w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm transition-all outline-none" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Lines Card -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8 relative">
+          <div class="absolute -top-3.5 left-6 bg-rose-600 text-white font-serif text-xs font-black tracking-widest uppercase px-4 py-1.5 rounded-full shadow-md">03</div>
+          <h2 class="font-serif text-xl font-black text-slate-900 mb-6">Lignes de prestation</h2>
+
+          <!-- Lines Table -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden mb-6 shadow-sm">
+            <!-- Header (hidden on mobile) -->
+            <div class="hidden md:grid grid-cols-12 bg-slate-900 text-white px-4 py-3 gap-4 text-xs font-semibold uppercase tracking-wider">
+              <div class="col-span-6">Désignation</div>
+              <div class="col-span-2 text-center">Quantité</div>
+              <div class="col-span-2 text-right">Prix Unitaire</div>
+              <div class="col-span-2 text-right pr-8">Total</div>
+            </div>
+            <div id="lignes-container" class="divide-y divide-slate-100 bg-white">
+              <!-- Lines dynamically rendered here -->
+            </div>
+          </div>
+
+          <!-- Prestations Footer -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6">
+            <button class="inline-flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 hover:border-rose-500 hover:text-rose-600 px-6 py-3 rounded-xl text-sm font-semibold transition-all text-slate-500"
+                    id="btnAdd" type="button">
+              <i class="fa-solid fa-plus text-sm"></i> Ajouter une ligne
+            </button>
+            <div class="bg-slate-900 text-white rounded-xl p-5 flex items-center justify-between min-w-[280px] shadow-md">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">TOTAL</span>
+              <strong id="totGeneral" class="text-xl sm:text-2xl font-black tracking-tight text-white">0,00 €</strong>
+            </div>
+          </div>
+
+          <!-- Conditions de règlement -->
+          <div class="flex flex-col gap-2 mt-8 pt-6 border-t border-slate-100">
+            <label for="conditions" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Conditions de règlement</label>
+            <input type="text" id="conditions" class="block w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm transition-all outline-none" />
+          </div>
+        </section>
+
+        <!-- Generate Button -->
+        <div class="flex flex-col items-center gap-4">
+          <div id="alertMsg" class="w-full max-w-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl p-4 text-center font-semibold shadow-sm hidden"></div>
+          <button class="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold px-12 py-4.5 rounded-xl shadow-lg hover:shadow-rose-600/30 hover:-translate-y-0.5 transition-all text-base focus:outline-none"
+                  id="btnGenerate" type="button">
+            <i class="fa-solid fa-file-invoice text-lg"></i>
+            <span id="btnLabel">Générer le devis PDF</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- TAB 2: CONTACTS LIST -->
+      <div id="container-contacts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+        <!-- Contacts rendered here -->
+      </div>
+
+      <!-- TAB 3: DOCUMENTS LIST (ARCHIVE) -->
+      <div id="container-documents" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+        <!-- Documents rendered here -->
+      </div>
+
+    </main>
+  </div>
 
   <!-- ── FOOTER ── -->
-  <footer class="site-footer">
-    <p>Aix en Vue · SIRET 92855251200016 · 23 boulevard François et Emile Zola, 13 100 Aix-en-Provence</p>
+  <footer class="bg-slate-900 text-slate-400 text-center py-6 px-4 border-t border-slate-800 text-xs mt-12">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="font-medium">Aix en Vue · Association reconnue d'intérêt général</p>
+      <p class="text-slate-500">SIRET : 92855251200016 · 23 boulevard François et Emile Zola, 13100 Aix-en-Provence</p>
+    </div>
   </footer>
 
   <script src="app.js"></script>
