@@ -224,28 +224,29 @@ function displayContacts(list) {
   
   list.forEach(c => {
     const card = document.createElement("div");
-    card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between hover:shadow-md transition-shadow";
+    card.className = "bg-white rounded-2xl shadow-md border-4 border-slate-900 p-6 flex flex-col justify-between hover:shadow-lg transition-shadow bg-[#ffffff]";
     card.innerHTML = `
       <div>
-        <div class="flex items-start justify-between mb-4">
-          <span class="text-[10px] font-mono text-slate-300">ID : #${escapeHtml(c.id)}</span>
+        <div class="flex items-start justify-between mb-4 pb-2 border-b-2 border-slate-200">
+          <span class="text-xs font-black text-slate-600 bg-slate-100 px-3 py-1 rounded border border-slate-400">ID : #${escapeHtml(c.id)}</span>
         </div>
-        <h2 class="text-lg font-extrabold text-slate-900 mb-2 flex items-center gap-2">
-          <i class="fa-solid fa-building text-rose-600 text-sm"></i>
-          ${escapeHtml(c.organisation) || 'Sans entité'}
+        <h2 class="text-xl sm:text-2xl font-black text-slate-950 mb-3 flex items-start gap-2.5 leading-snug">
+          <i class="fa-solid fa-building text-rose-700 text-lg mt-1 flex-shrink-0"></i>
+          <span>${escapeHtml(c.organisation) || 'Sans entité'}</span>
         </h2>
-        ${c.nom ? `<p class="text-sm font-semibold text-slate-500 mb-4 flex items-center gap-2"><i class="fa-solid fa-user text-xs text-slate-400"></i> ${escapeHtml(c.nom)}</p>` : '<div class="mb-4"></div>'}
-        <div class="space-y-2 text-sm text-slate-600 border-t border-slate-50 pt-3">
-          ${c.mobile ? `<p class="flex items-center gap-2"><i class="fa-solid fa-phone text-slate-400 w-4"></i> <a href="tel:${c.mobile}" class="hover:text-rose-600 font-medium">${escapeHtml(c.mobile)}</a></p>` : ''}
-          ${c.email ? `<p class="flex items-center gap-2 truncate"><i class="fa-solid fa-envelope text-slate-400 w-4"></i> <a href="mailto:${c.email}" class="hover:text-rose-600 font-medium">${escapeHtml(c.email)}</a></p>` : ''}
-          ${c.adresse ? `<p class="flex items-start gap-2"><i class="fa-solid fa-map-pin text-slate-400 w-4 mt-0.5"></i> <span class="text-xs">${escapeHtml(c.adresse)}</span></p>` : ''}
-          ${c.siret ? `<p class="flex items-center gap-2 text-xs text-slate-400"><i class="fa-solid fa-id-card w-4"></i> SIRET : ${escapeHtml(c.siret)}</p>` : ''}
+        ${c.nom ? `<p class="text-base font-extrabold text-slate-800 mb-5 flex items-center gap-2 bg-slate-50 p-2 rounded border border-slate-300"><i class="fa-solid fa-user text-sm text-rose-700"></i> Contact : ${escapeHtml(c.nom)}</p>` : '<div class="mb-5"></div>'}
+        
+        <div class="space-y-3 text-base text-slate-950 border-t-2 border-slate-200 pt-4 font-bold">
+          ${c.mobile ? `<p class="flex items-center gap-3"><i class="fa-solid fa-phone text-rose-700 w-5 text-lg"></i> Tél : <a href="tel:${c.mobile}" class="text-rose-700 underline decoration-2 font-black">${escapeHtml(c.mobile)}</a></p>` : ''}
+          ${c.email ? `<p class="flex items-center gap-3 truncate"><i class="fa-solid fa-envelope text-rose-700 w-5 text-lg"></i> Email : <a href="mailto:${c.email}" class="text-rose-700 underline decoration-2 font-black truncate">${escapeHtml(c.email)}</a></p>` : ''}
+          ${c.adresse ? `<p class="flex items-start gap-3"><i class="fa-solid fa-map-pin text-rose-700 w-5 text-lg mt-0.5"></i> Adresse : <span class="text-slate-900 font-extrabold">${escapeHtml(c.adresse)}</span></p>` : ''}
+          ${c.siret ? `<p class="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 p-1.5 rounded border border-slate-200"><i class="fa-solid fa-id-card w-5 text-base text-slate-500"></i> SIRET : ${escapeHtml(c.siret)}</p>` : ''}
         </div>
       </div>
-      <div class="mt-6 pt-4 border-t border-slate-50 flex items-center justify-end">
+      <div class="mt-8 pt-4 border-t-2 border-slate-200 flex items-center justify-end">
         <button onclick="prefillClient('${escJs(c.organisation)}', '${escJs(c.siret)}', '${escJs(c.nom)}', '${escJs(c.email)}', '${escJs(c.adresse)}')"
-                class="inline-flex items-center gap-2 text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-100 hover:border-rose-600 px-4 py-2.5 rounded-xl transition-all shadow-sm">
-          <i class="fa-solid fa-file-invoice"></i> Facturer / Devis
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 text-base font-black bg-rose-700 hover:bg-rose-800 text-white hover:text-white border-2 border-rose-950 px-6 py-3.5 rounded-xl transition-all shadow-md focus:ring-4 focus:ring-rose-600">
+          <i class="fa-solid fa-file-invoice text-lg"></i> Facturer / Devis
         </button>
       </div>
     `;
@@ -276,44 +277,46 @@ function displayDocuments(list) {
 
   list.forEach(d => {
     const isDevis = d.type === "Devis";
-    const badgeClass = isDevis ? "bg-cyan-50 text-cyan-700 border-cyan-150" : "bg-emerald-50 text-emerald-700 border-emerald-150";
+    const badgeClass = isDevis ? "bg-cyan-800 text-white border-2 border-cyan-950" : "bg-emerald-800 text-white border-2 border-emerald-950";
     const iconClass = isDevis ? "fa-file-signature" : "fa-file-invoice";
 
     const card = document.createElement("div");
-    card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between hover:shadow-md transition-shadow";
+    card.className = "bg-white rounded-2xl shadow-md border-4 border-slate-900 p-6 flex flex-col justify-between hover:shadow-lg transition-shadow bg-[#ffffff]";
     card.innerHTML = `
       <div>
-        <div class="flex items-start justify-between mb-4">
-          <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold border ${badgeClass}">
-            <i class="fa-solid ${iconClass} mr-1.5"></i> ${d.type}
+        <div class="flex items-start justify-between mb-4 pb-2 border-b-2 border-slate-200">
+          <span class="inline-flex items-center px-4 py-1.5 rounded-lg text-sm font-black uppercase ${badgeClass}">
+            <i class="fa-solid ${iconClass} mr-2"></i> ${d.type}
           </span>
-          <span class="text-[10px] font-mono text-slate-300">#${escapeHtml(d.id)}</span>
+          <span class="text-xs font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">ID : #${escapeHtml(d.id)}</span>
         </div>
-        <h2 class="text-base font-bold text-slate-900 mb-2 line-clamp-2" title="${escapeHtml(d.titre)}">
+        <h2 class="text-lg sm:text-xl font-black text-slate-950 mb-2 leading-snug line-clamp-2" title="${escapeHtml(d.titre)}">
           ${escapeHtml(d.titre) || 'Sans titre'}
         </h2>
-        <p class="text-[10px] text-slate-400 font-medium flex items-center gap-1.5 mb-6">
-          <i class="fa-solid fa-clock"></i> ${escapeHtml(d.datetime)}
+        <p class="text-xs font-bold text-slate-500 flex items-center gap-1.5 mb-6">
+          <i class="fa-solid fa-clock"></i> Date d'ajout : ${escapeHtml(d.datetime)}
         </p>
       </div>
       
-      <div class="pt-4 border-t border-slate-50 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <a href="${escapeHtml(d.url)}" target="_blank" 
-             class="inline-flex items-center gap-2 text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-100 hover:border-rose-600 px-4 py-2.5 rounded-xl transition-all shadow-sm">
-            <i class="fa-solid fa-file-pdf"></i> PDF
-          </a>
-          ${isDevis ? `
-          <button onclick="convertDevisToFacture('${escJs(d.id)}')" 
-                  class="inline-flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-white hover:bg-indigo-600 border border-indigo-100 hover:border-indigo-600 px-3 py-2.5 rounded-xl transition-all shadow-sm"
-                  title="Créer une facture à partir de ce devis">
-            <i class="fa-solid fa-file-invoice-dollar"></i> Facturer
-          </button>
-          ` : ''}
+      <div class="pt-4 border-t-2 border-slate-200 flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2 w-full">
+            <a href="${escapeHtml(d.url)}" target="_blank" 
+               class="flex-1 inline-flex items-center justify-center gap-2 text-base font-black text-rose-700 hover:text-white bg-rose-55 hover:bg-rose-700 border-2 border-rose-700 hover:border-rose-950 px-4 py-3.5 rounded-xl transition-all shadow-sm focus:ring-4 focus:ring-rose-600">
+              <i class="fa-solid fa-file-pdf text-lg"></i> VOIR PDF
+            </a>
+            ${isDevis ? `
+            <button onclick="convertDevisToFacture('${escJs(d.id)}')" 
+                    class="flex-1 inline-flex items-center justify-center gap-2 text-base font-black text-indigo-700 hover:text-white bg-indigo-50 hover:bg-indigo-700 border-2 border-indigo-700 hover:border-indigo-950 px-4 py-3.5 rounded-xl transition-all shadow-sm focus:ring-4 focus:ring-indigo-600"
+                    title="Créer une facture à partir de ce devis">
+              <i class="fa-solid fa-file-invoice-dollar text-lg"></i> FACTURER
+            </button>
+            ` : ''}
+          </div>
         </div>
         <button onclick="confirmDeleteDocument('${escJs(d.id)}', '${escJs(d.titre)}')" 
-                class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-rose-600 hover:bg-rose-50 px-3 py-2.5 rounded-xl transition-all">
-          <i class="fa-solid fa-trash-can"></i> Supprimer
+                class="w-full inline-flex items-center justify-center gap-2 text-sm font-black text-slate-600 hover:text-rose-700 hover:bg-rose-50 border-2 border-dashed border-slate-400 hover:border-rose-600 py-2.5 rounded-xl transition-all">
+          <i class="fa-solid fa-trash-can"></i> Supprimer définitivement
         </button>
       </div>
     `;
@@ -364,31 +367,61 @@ function convertDevisToFacture(docId) {
 
 // ── Suppression d'un document ──────────────────────────────────────
 async function confirmDeleteDocument(id, title) {
-  const check = confirm(`⚠️ ATTENTION ⚠️\n\nÊtes-vous sûr de vouloir supprimer définitivement le document :\n"${title}" ?\n\nCette action va effacer définitivement le fichier correspondant sur Google Drive et sa ligne dans Google Sheets.`);
-  if (!check) return;
+  const checkMessage = `Êtes-vous sûr de vouloir supprimer définitivement le document suivant :\n"${title}" ?\n\nCette action va effacer définitivement le fichier correspondant sur Google Drive et sa ligne dans Google Sheets.`;
 
-  try {
-    toggleLoader(true, "Suppression sur Google Drive & Sheets...");
-    
-    const url = `${WEB_APP_URL}?action=deleteDocument&id=${encodeURIComponent(id)}`;
-    const response = await fetch(url, { method: "GET", redirect: "follow" });
-    if (!response.ok) throw new Error("Échec technique de communication.");
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      // Retrait local
-      store.documents = store.documents.filter(doc => doc.id !== id);
+  showCustomConfirm("⚠️ ATTENTION : Suppression ⚠️", checkMessage, async () => {
+    try {
+      toggleLoader(true, "Suppression sur Google Drive & Sheets...");
+      
+      const url = `${WEB_APP_URL}?action=deleteDocument&id=${encodeURIComponent(id)}`;
+      const response = await fetch(url, { method: "GET", redirect: "follow" });
+      if (!response.ok) throw new Error("Échec technique de communication.");
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Retrait local
+        store.documents = store.documents.filter(doc => doc.id !== id);
+        toggleLoader(false);
+        updateDocumentNumbers();
+        renderActiveTab();
+      } else {
+        throw new Error(result.error || "Raison inconnue.");
+      }
+    } catch (err) {
       toggleLoader(false);
-      updateDocumentNumbers();
-      renderActiveTab();
-    } else {
-      throw new Error(result.error || "Raison inconnue.");
+      alert("Erreur lors de la suppression : " + err.message);
     }
-  } catch (err) {
-    toggleLoader(false);
-    alert("Erreur lors de la suppression : " + err.message);
-  }
+  });
+}
+
+// ── Boîte de dialogue de confirmation personnalisée et accessible ──
+function showCustomConfirm(title, message, onConfirm) {
+  const modal = document.getElementById("custom-confirm-modal");
+  const titleEl = document.getElementById("confirm-modal-title");
+  const msgEl = document.getElementById("confirm-modal-message");
+  const btnCancel = document.getElementById("confirm-modal-cancel");
+  const btnConfirm = document.getElementById("confirm-modal-confirm");
+
+  titleEl.textContent = title;
+  msgEl.textContent = message;
+  
+  modal.classList.remove("hidden");
+
+  // Cloner pour enlever les anciens écouteurs d'événements
+  const newBtnConfirm = btnConfirm.cloneNode(true);
+  const newBtnCancel = btnCancel.cloneNode(true);
+  btnConfirm.parentNode.replaceChild(newBtnConfirm, btnConfirm);
+  btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+
+  newBtnCancel.addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
+
+  newBtnConfirm.addEventListener("click", () => {
+    modal.classList.add("hidden");
+    onConfirm();
+  });
 }
 
 // ── Logo Base64 ────────────────────────────────────────────────────
@@ -444,48 +477,49 @@ function renderLignes() {
   container.innerHTML = "";
   lignes.forEach(l => {
     const row = document.createElement("div");
-    row.className = "p-4 flex flex-col md:grid md:grid-cols-12 gap-4 items-center relative hover:bg-slate-50 transition-colors";
+    row.className = "p-4 flex flex-col md:grid md:grid-cols-12 gap-4 items-center relative hover:bg-rose-50/30 transition-colors";
     row.id = `ligne-${l.id}`;
     row.innerHTML = `
       <!-- Désignation -->
       <div class="w-full md:col-span-6 pr-8 md:pr-0">
-        <input type="text" placeholder="Description de la prestation"
-               value="${escapeHtml(l.designation)}"
-               oninput="updateLigne(${l.id},'designation',this.value)"
-               class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all font-medium bg-white" />
+        <span class="text-xs font-black text-slate-800 uppercase tracking-wider md:hidden mb-1 block">Désignation</span>
+        <textarea placeholder="Description de la prestation"
+                  rows="2"
+                  oninput="updateLigne(${l.id},'designation',this.value)"
+                  class="w-full px-4 py-3 border-2 border-slate-800 rounded-lg text-base focus:ring-4 focus:ring-rose-600 focus:border-rose-600 outline-none transition-all font-bold bg-white text-slate-900">${escapeHtml(l.designation)}</textarea>
       </div>
       
       <!-- Mobile labels + inputs -->
       <div class="grid grid-cols-3 gap-3 w-full md:col-span-6 items-center">
         <!-- Quantité -->
         <div class="flex flex-col md:block">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider md:hidden mb-1">Quantité</span>
+          <span class="text-xs font-black text-slate-800 uppercase tracking-wider md:hidden mb-1 block">Quantité</span>
           <input type="number" min="1" step="1" value="${l.quantite}"
                  oninput="updateLigne(${l.id},'quantite',this.value)"
-                 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none text-center transition-all font-medium bg-white" />
+                 class="w-full px-3 py-3 border-2 border-slate-800 rounded-lg text-base focus:ring-4 focus:ring-rose-600 focus:border-rose-600 outline-none text-center transition-all font-bold bg-white text-slate-900" />
         </div>
         
         <!-- Prix Unit. -->
         <div class="flex flex-col md:block">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider md:hidden mb-1">Prix Unit.</span>
+          <span class="text-xs font-black text-slate-800 uppercase tracking-wider md:hidden mb-1 block">Prix Unit.</span>
           <input type="number" min="0" step="0.01" value="${l.prixUnitaire}"
                  oninput="updateLigne(${l.id},'pu',this.value)"
-                 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none text-right transition-all font-medium bg-white" />
+                 class="w-full px-3 py-3 border-2 border-slate-800 rounded-lg text-base focus:ring-4 focus:ring-rose-600 focus:border-rose-600 outline-none text-right transition-all font-bold bg-white text-slate-900" />
         </div>
         
         <!-- Total -->
         <div class="flex flex-col md:block pr-6 md:pr-4">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider md:hidden mb-1">Total</span>
-          <div class="text-sm font-bold text-slate-800 text-right py-2" id="total-${l.id}">
+          <span class="text-xs font-black text-slate-800 uppercase tracking-wider md:hidden mb-1 block">Total</span>
+          <div class="text-base font-black text-slate-950 text-right py-3 pr-2" id="total-${l.id}">
             ${formatEur(l.quantite * l.prixUnitaire)}
           </div>
         </div>
       </div>
       
       <!-- Bouton Supprimer -->
-      <button class="absolute right-3 top-3 md:top-auto md:relative md:right-0 p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+      <button class="absolute right-3 top-3 md:top-auto md:relative md:right-0 p-3 text-slate-600 hover:text-rose-700 hover:bg-rose-100 rounded-xl transition-all border-2 border-transparent hover:border-rose-700"
               onclick="deleteLigne(${l.id})" title="Supprimer">
-        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>
       </button>
